@@ -7,9 +7,11 @@ public class Calculator : MonoBehaviour
     public TextMeshProUGUI display;
     public TextMeshProUGUI display2;
 
-    float prevInput = 0f;
+    float operand1 = 0f;
+    float operand2 = 0f;
 
     bool clearPrevInput = true;
+    bool opChanged = false;
 
     private EquationType equationType;
 
@@ -44,13 +46,12 @@ public class Calculator : MonoBehaviour
 
 
     public void SetEquationType(string input){
-        prevInput = float.Parse(display.text);
+        operand1 = float.Parse(display.text);
         clearPrevInput = true;
 
         if (input == "+"){
             equationType = EquationType.ADD;
             display2.text = "+";
-            //Image addButton = GameObject.Find("BPlus").GetComponent<Image>();
         } else if (input == "-"){
             equationType = EquationType.SUBTRACT;
             display2.text = "-";
@@ -62,6 +63,8 @@ public class Calculator : MonoBehaviour
             display2.text = "/";
         }
 
+        opChanged = true;
+
         Debug.Log(equationType);
     }
 
@@ -71,23 +74,35 @@ public class Calculator : MonoBehaviour
         display.text = "0";
         display2.text = "";
         clearPrevInput = true;
-        prevInput = 0f;
+        operand1 = 0f;
+        operand2 = 0f;
         equationType = EquationType.None;
     }
 
     public void Calculate()
     {
-        float currentInput = float.Parse(display.text);
-
-        if (equationType == EquationType.ADD){
-            display.text = (prevInput + currentInput).ToString();
-        } else if (equationType == EquationType.SUBTRACT){
-            display.text = (prevInput - currentInput).ToString();
-        } else if (equationType == EquationType.MULTIPLY){
-            display.text = (prevInput * currentInput).ToString();
-        } else if (equationType == EquationType.DIVIDE){
-            display.text = (prevInput / currentInput).ToString();
+        // Check if the same operation is being repeated (hitting equals without entering a new operation), and if so, use the current value as operand1 instead of operand2 to preserve the operation
+        if (opChanged == false){
+            operand1 = float.Parse(display.text);
+        } else {
+            operand2 = float.Parse(display.text);
+            opChanged = false;
         }
+        
+        float result = 0f;
+
+        // Compute the operation according to current equation type
+        if (equationType == EquationType.ADD){
+            result = operand1 + operand2;
+        } else if (equationType == EquationType.SUBTRACT){
+            result = operand1 - operand2;
+        } else if (equationType == EquationType.MULTIPLY){
+            result = operand1 * operand2;
+        } else if (equationType == EquationType.DIVIDE){
+            result = operand1 / operand2;
+        }
+
+        display.text = result.ToString();
     }
 
     public enum EquationType
