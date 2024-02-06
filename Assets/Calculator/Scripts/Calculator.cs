@@ -45,8 +45,20 @@ public class Calculator : MonoBehaviour
     }
 
 
-    public void SetEquationType(string input){
+    public void SetEquationType(string input)
+    {
+
+
+        // Check if a new operation is being entered consecutively without hitting equals - if so, automatically calculate the previous operation and store the new result as operand1
+        if (opChanged == true){
+            Calculate();
+            opChanged = true;
+        } else {
+            opChanged = true;
+        }
+
         operand1 = float.Parse(display.text);
+        Debug.Log("Operand1: " + operand1.ToString());
         clearPrevInput = true;
 
         if (input == "+"){
@@ -62,8 +74,6 @@ public class Calculator : MonoBehaviour
             equationType = EquationType.DIVIDE;
             display2.text = "/";
         }
-
-        opChanged = true;
 
         Debug.Log(equationType);
     }
@@ -81,12 +91,13 @@ public class Calculator : MonoBehaviour
 
     public void Calculate()
     {
-        // Check if the same operation is being repeated (hitting equals without entering a new operation), and if so, use the current value as operand1 instead of operand2 to preserve the operation
-        if (opChanged == false){
-            operand1 = float.Parse(display.text);
-        } else {
+
+        // Check if the same operation is being repeated (hitting equals without entering a new operation), and if so, use the current value as operand1 instead of operand2 to preserve the previous operation
+        if (opChanged == true){
             operand2 = float.Parse(display.text);
             opChanged = false;
+        } else {
+            operand1 = float.Parse(display.text);
         }
         
         float result = 0f;
