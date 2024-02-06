@@ -5,12 +5,12 @@ using TMPro;
 public class Calculator : MonoBehaviour
 {
     public TextMeshProUGUI display;
+    public TextMeshProUGUI display2;
 
     float prevInput = 0f;
 
     bool clearPrevInput = true;
 
-    //TODO: Leave this alone
     private EquationType equationType;
 
     private void Start()
@@ -49,13 +49,17 @@ public class Calculator : MonoBehaviour
 
         if (input == "+"){
             equationType = EquationType.ADD;
+            display2.text = "+";
             //Image addButton = GameObject.Find("BPlus").GetComponent<Image>();
         } else if (input == "-"){
             equationType = EquationType.SUBTRACT;
+            display2.text = "-";
         } else if (input == "*"){
             equationType = EquationType.MULTIPLY;
+            display2.text = "*";
         } else {
             equationType = EquationType.DIVIDE;
+            display2.text = "/";
         }
 
         Debug.Log(equationType);
@@ -65,6 +69,7 @@ public class Calculator : MonoBehaviour
     {
         // Reset all values
         display.text = "0";
+        display2.text = "";
         clearPrevInput = true;
         prevInput = 0f;
         equationType = EquationType.None;
