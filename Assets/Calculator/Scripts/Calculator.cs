@@ -1,17 +1,19 @@
+// Ricky Moctezuma - Game Engine Scripting Spring 2024
 using UnityEngine;
 using TMPro;
-//using UnityEngine.UI;
 
 public class Calculator : MonoBehaviour
 {
     public TextMeshProUGUI display;
-    public TextMeshProUGUI display2;
+    public TextMeshProUGUI operatorDisplay;
 
     float operand1 = 0f;
     float operand2 = 0f;
 
     bool clearPrevInput = true;
-    bool opChanged = false;
+
+    // Variable to keep track of whether the operation has been changed since the last calculation, for use in consecutive equals button calculations and automatic calculations when inputting consecutive operations without using equals
+    bool operatorChanged = false;
 
     private EquationType equationType;
 
@@ -29,16 +31,15 @@ public class Calculator : MonoBehaviour
             clearPrevInput = false;
         }
 
-
-        // If the input is the change sign variable, adds or removes the negative sign to the start of the string
+        // If the input is the word "sign" (as sent by the +/- button), adds or removes the negative sign to the start of the string
         if (input == "sign"){
             if (display.text.Contains("-")){
                 display.text = display.text.Remove(0, 1);
             } else {
                 display.text = '-' + display.text;
             }
-        // If the input is a decimal, check if the display already has a decimal. If so, then don't add another decimal
-        // If the input is a number, add the number to the current display number
+        // If the input is a number, add the number to the current display text
+        // If the input is a decimal, check if the display already has a decimal. If so, then don't add another decimal, otherwise add it like normal
         } else if (!(input == "." && display.text.Contains('.'))){ 
             display.text += input;
         }
@@ -47,32 +48,32 @@ public class Calculator : MonoBehaviour
 
     public void SetEquationType(string input)
     {
-
-
-        // Check if a new operation is being entered consecutively without hitting equals - if so, automatically calculate the previous operation and store the new result as operand1
-        if (opChanged == true){
+        // Check if a new operation is being entered consecutively without hitting equals - if so, automatically calculate the previous operation
+        if (operatorChanged == true){
             Calculate();
-            opChanged = true;
+            // operatorChanged is set to false by Calculate(), but since we are calculating as part of entering a new operation, we'll set it back to true
+            operatorChanged = true;
         } else {
-            opChanged = true;
+            operatorChanged = true;
         }
 
+        // Stores the current value in operand1 and makes it so the next number will start a new input string
         operand1 = float.Parse(display.text);
-        Debug.Log("Operand1: " + operand1.ToString());
         clearPrevInput = true;
 
+        // Sets the internal operation type and updates the user-facing operation display according to input
         if (input == "+"){
             equationType = EquationType.ADD;
-            display2.text = "+";
+            operatorDisplay.text = "+";
         } else if (input == "-"){
             equationType = EquationType.SUBTRACT;
-            display2.text = "-";
+            operatorDisplay.text = "-";
         } else if (input == "*"){
             equationType = EquationType.MULTIPLY;
-            display2.text = "*";
+            operatorDisplay.text = "*";
         } else {
             equationType = EquationType.DIVIDE;
-            display2.text = "/";
+            operatorDisplay.text = "/";
         }
 
         Debug.Log(equationType);
@@ -82,7 +83,7 @@ public class Calculator : MonoBehaviour
     {
         // Reset all values
         display.text = "0";
-        display2.text = "";
+        operatorDisplay.text = "";
         clearPrevInput = true;
         operand1 = 0f;
         operand2 = 0f;
@@ -91,11 +92,10 @@ public class Calculator : MonoBehaviour
 
     public void Calculate()
     {
-
         // Check if the same operation is being repeated (hitting equals without entering a new operation), and if so, use the current value as operand1 instead of operand2 to preserve the previous operation
-        if (opChanged == true){
+        if (operatorChanged == true){
             operand2 = float.Parse(display.text);
-            opChanged = false;
+            operatorChanged = false;
         } else {
             operand1 = float.Parse(display.text);
         }
