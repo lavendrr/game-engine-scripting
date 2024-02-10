@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 namespace Battleship
 {
@@ -9,16 +11,17 @@ namespace Battleship
     public class GameManager : MonoBehaviour
     {
         [SerializeField]
-        private int[,] grid = new int[,]
-        {
-            // Top left is (0,0)
-            { 1,1,0,0,1 },
-            { 0,0,0,0,0 },
-            { 0,0,1,0,1 },
-            { 1,0,1,0,0 },
-            { 1,0,1,0,1}
-            // Bottom right is (4,4)
-        };
+        private int[,] grid;
+
+        // {
+        //     // Top left is (0,0)
+        //     { 1,1,0,0,1 },
+        //     { 0,0,0,0,0 },
+        //     { 0,0,1,0,1 },
+        //     { 1,0,1,0,0 },
+        //     { 1,0,1,0,1 }
+        //     // Bottom right is (4,4)
+        // };
 
         // Represents where the player has fired
         private bool[,] hits;
@@ -44,6 +47,7 @@ namespace Battleship
 
         private void Awake()
         {
+            grid = RandomArray();
             // Initialize rows/cols to help us with our operations
             nRows = grid.GetLength(0);
             nCols = grid.GetLength(1);
@@ -205,7 +209,36 @@ namespace Battleship
             timeLabel.text = string.Format("{0} : {1}", time / 60, (time % 60).ToString("00"));
         }
 
+        // MY WORK (after following tutorial)
+
+        public void Restart()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        int[,] RandomArray()
+        {
+            int[,] output = new int[5, 5];
+
+            int count = 0, x = 0, y = 0;
+            Random rnd = new Random();
+
+            while (count != 10)
+            {
+                x = rnd.Next(0, 5);
+                y = rnd.Next(0, 5);
+
+                while (output[x, y] == 1)
+                {
+                    x = rnd.Next(0, 5);
+                    y = rnd.Next(0, 5);
+                }
+
+                output[x, y] = 1;
+                count++;
+
+            };
+            return output;
+        }
     }
-
 }
-
