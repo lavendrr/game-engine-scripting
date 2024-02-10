@@ -30,8 +30,8 @@ namespace Battleship
         private int nRows;
         private int nCols;
         // Current row/column we are on
-        private int row;
-        private int col;
+        private int current_row;
+        private int current_col;
         // Correctly hit ships
         private int score;
         // Total time game has been running
@@ -60,7 +60,8 @@ namespace Battleship
             for (int i = 0; i < nRows * nCols; i++)
             {
                 // Create an instance of the prefab and child it to the gridRoot
-                Instantiate(cellPrefab, gridRoot);
+                Object clone = Instantiate(cellPrefab, gridRoot);
+                clone.name = string.Format("Clone{0}", i);
             }
 
             SelectCurrentCell();
@@ -69,11 +70,19 @@ namespace Battleship
 
         private void Update()
         {
-            TryEndGame();
+            //TryEndGame();
         }
 
 
         Transform GetCurrentCell()
+        {
+            // You can figure out the child index of the cell that is a part of the grid by calculating (row*Cols) + col
+            int index = (current_row * nCols) + current_col;
+            // Return the child by index
+            return gridRoot.GetChild(index);
+        }
+
+        Transform GetCellAt(int row, int col)
         {
             // You can figure out the child index of the cell that is a part of the grid by calculating (row*Cols) + col
             int index = (row * nCols) + col;
@@ -105,9 +114,9 @@ namespace Battleship
             UnselectCurrentCell();
 
             // Update the column
-            col += amt;
+            current_col += amt;
             // Make sure the column stays within the bounds of the grid
-            col = Mathf.Clamp(col, 0, nCols - 1);
+            current_col = Mathf.Clamp(current_col, 0, nCols - 1);
 
             // Select the new cell
             SelectCurrentCell();
@@ -119,9 +128,9 @@ namespace Battleship
             UnselectCurrentCell();
 
             // Update the row
-            row += amt;
+            current_row += amt;
             // Make sure the row stays within the bounds of the grid
-            row = Mathf.Clamp(row, 0, nRows - 1);
+            current_row = Mathf.Clamp(current_row, 0, nRows - 1);
             
             // Select the new cell
             SelectCurrentCell();
@@ -157,18 +166,19 @@ namespace Battleship
         {
             // Checks if the cell in the hits data is true or false
             // If it's true that means we already fired a shot in the current cell, and we shouldn't do anything
-            if (hits[row, col]) return;
+            if (hits[current_row, current_col]) return;
 
             // Mark this cell as being fired upon
-            hits[row, col] = true;
+            hits[current_row, current_col] = true;
 
             // If this cell is a ship
-            if (grid[row, col] == 1)
+            if (grid[current_row, current_col] == 1)
             {
                 // Hit it
                 // Increment score
                 ShowHit();
                 IncrementScore();
+                TryEndGame();
             }
             // If the cell is open water
             else
@@ -187,7 +197,7 @@ namespace Battleship
                 for (int col = 0; col < nCols; col++)
                 {
                     // If a cell is not a ship then we can ignore it
-                    if (grid[row, col] ==0) continue;
+                    if (grid[row, col] == 0) continue;
                     // If a cell is a ship and it hasn't been scored, then do a simple return because we haven't finished the game
                     if (hits[row, col] == false) return;
                 }
@@ -211,9 +221,48 @@ namespace Battleship
 
         // MY WORK (after following tutorial)
 
-        public void Restart()
+        public void RestartScene()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        public void Restart()
+        {
+            UnselectCurrentCell();
+            current_row = 0;
+            current_col = 0;
+            grid = RandomArray();
+            hits = new bool[nRows, nCols];
+
+            score = 0;
+            scoreLabel.text = string.Format("Score: {0}", score);
+
+            CancelInvoke("IncrementTime");
+            time = 0;
+            timeLabel.text = string.Format("{0} : {1}", time / 60, (time % 60).ToString("00"));
+            InvokeRepeating("IncrementTime", 1f, 1f);
+
+            winLabel.SetActive(false);
+
+            for (int row = 0; row < nRows; row++)
+            {
+                // And check every column
+                Debug.Log(string.Format("Row checked: {0}", row));
+                for (int col = 0; col < nCols; col++)
+                {
+                    Debug.Log(string.Format("Column checked: {0}", col));
+                    // Get the current cell
+                    Transform cell = GetCellAt(row, col);
+                    Debug.Log(string.Format("Cell: {0}", cell.gameObject.name));
+                    cell.Find("Miss").gameObject.SetActive(false);
+                    //miss.gameObject.SetActive(false);
+                    Transform hit = cell.Find("Hit");
+                    hit.gameObject.SetActive(false);
+                }
+            }
+
+            SelectCurrentCell();
+
         }
 
         int[,] RandomArray()
