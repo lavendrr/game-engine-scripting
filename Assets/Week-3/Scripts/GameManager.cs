@@ -246,18 +246,11 @@ namespace Battleship
 
             for (int row = 0; row < nRows; row++)
             {
-                // And check every column
-                Debug.Log(string.Format("Row checked: {0}", row));
                 for (int col = 0; col < nCols; col++)
                 {
-                    Debug.Log(string.Format("Column checked: {0}", col));
-                    // Get the current cell
                     Transform cell = GetCellAt(row, col);
-                    Debug.Log(string.Format("Cell: {0}", cell.gameObject.name));
                     cell.Find("Miss").gameObject.SetActive(false);
-                    //miss.gameObject.SetActive(false);
-                    Transform hit = cell.Find("Hit");
-                    hit.gameObject.SetActive(false);
+                    cell.Find("Hit").gameObject.SetActive(false);
                 }
             }
 
