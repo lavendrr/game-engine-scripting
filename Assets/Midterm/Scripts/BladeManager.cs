@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
+using TMPro;
 
 
 public class BladeManager : MonoBehaviour
@@ -20,6 +21,11 @@ public class BladeManager : MonoBehaviour
 
     [SerializeField]
     Transform hand1Obj, hand2Obj;
+
+    [SerializeField]
+    public TextMeshProUGUI stack1Text;
+
+    private int stack1 = 0;
 
     [SerializeField]
     private int[] hand1;
@@ -45,6 +51,7 @@ public class BladeManager : MonoBehaviour
             Image img1 = card1.GetComponent<Image>();
             img1.sprite = spriteArray[hand1[i] - 1];
 
+            // Set all of Player's 2 cards to use the card back sprite since they are hidden
             GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
             Image img2 = card2.GetComponent<Image>();
             img2.sprite = spriteArray[9];
@@ -58,7 +65,7 @@ public class BladeManager : MonoBehaviour
         
     }
 
-    void AssignCards()
+    public void AssignCards()
     {
         Random rng = new Random();
         int[] randomDeck = totalDeck.OrderBy(x => rng.Next()).ToArray();
@@ -83,4 +90,22 @@ public class BladeManager : MonoBehaviour
         Array.Sort(hand2);
 
     }
+
+    public void blade_test(GameObject card)
+    {
+        Debug.Log("Clicked!");
+        int index = card.transform.GetSiblingIndex();
+        stack1 += hand1[index];
+        //hand1 = RemoveAt(hand1, index);
+        card.SetActive(false);
+        stack1Text.text = stack1.ToString();
+    }
+
+    // int[] RemoveAt(int[] arr, int index)
+    // {
+    //     var output = new List<int>(arr);
+    //     output.RemoveAt(index);
+    //     return output.ToArray();
+    // }
+
 }
