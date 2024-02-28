@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Hive : MonoBehaviour
 {
@@ -24,23 +25,29 @@ public class Hive : MonoBehaviour
     private Sprite[] spriteArray;
     private Image hiveSprite;
 
+    private TextMeshProUGUI[] textArray = new TextMeshProUGUI[3];
+
 
     // Start is called before the first frame update
     void Start()
     {
         spriteArray = new Sprite[3] {sprite1, sprite2, sprite3};
 
+        textArray = GetComponentsInChildren<TextMeshProUGUI>();
+
         hiveSprite = GetComponent<Image>();
 
         MakeBees(totalBees);
+
+        UpdateText();
     }
 
     // Update is called once per frame
     void Update()
     {
         // Increment the honey timer if the hive has nectar and if the timer variable is less than the rate. 
-        //Once the timer reaches the rate variable, increment the honey, decrement the nectar used, and reset the timer
-        if (nectar > 0 && honeyTimer < honeyRate)
+        // Once the timer reaches the rate variable, increment the honey, decrement the nectar used, and reset the timer
+        if (nectar > 0 && honeyTimer < honeyRate && honey < 9)
         {
             honeyTimer += 1;
         } else if (honeyTimer >= honeyRate)
@@ -48,6 +55,8 @@ public class Hive : MonoBehaviour
             honey += 1;
             nectar -= 1;
             honeyTimer = 0f;
+
+            UpdateText();
 
             if (honey < 10 && honey % 3 == 0)
             {
@@ -66,6 +75,7 @@ public class Hive : MonoBehaviour
             beeTimer = 0f;
             MakeBees(1);
             Debug.Log("New bee made!");
+            UpdateText();
         }
         
     }
@@ -73,6 +83,7 @@ public class Hive : MonoBehaviour
     public void ReceiveNectar()
     {
         nectar += 1;
+        UpdateText();
     }
 
     private void MakeBees(int beeAmt)
@@ -86,5 +97,12 @@ public class Hive : MonoBehaviour
             Vector3 offset = bee.GetComponent<Bee>().Init(gameObject);
             bee.transform.position = transform.position + offset;
         }
+    }
+
+    private void UpdateText()
+    {
+        textArray[0].text = "Nectar: " + nectar.ToString();
+        textArray[1].text = "Honey: " + honey.ToString();
+        textArray[2].text = "Bees: " + totalBees.ToString();
     }
 }

@@ -23,7 +23,8 @@ public class Bee : MonoBehaviour
         inProgress = false;
         beeSprite = GetComponent<Image>();
         random = new Random();
-        offset = new Vector3((float)random.Next(-100, 100), (float)random.Next(-100, 100), 0f);
+        //offset = new Vector3((float)random.Next(-100, 100), (float)random.Next(-100, 100), 0f);
+        offset = new Vector3((float)(random.Next(1, 3)==1 ? random.Next(-150, -100) : random.Next(50, 150)), (float)(random.Next(1, 3)==1 ? random.Next(-150, -50) : random.Next(50, 150)), 0f);
         return offset;
     }
 

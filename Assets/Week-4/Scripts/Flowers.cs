@@ -52,18 +52,25 @@ public class Flowers : MonoBehaviour
     {
         if (hasNectar == true)
         {
+            // Reset the flower's nectar status, sprite, and target status
             hasNectar = false;
             flowerSprite.sprite = emptySprite;
             isTarget = false;
+
+            // 20% chance to generate a new flower when nectar is harvested, but will only generate if the total number of flowers is within the set flower limit
             if (random.Next(-1, 100) <= 20 && GameObject.FindGameObjectsWithTag("Flower").Length <= maxFlowers)
             {
+                // Create a new flower and parent it to the flower parent object
                 GameObject newFlower = Instantiate(flowerPrefab, GameObject.Find("FlowerParent").transform);
-                //Vector3 offset = new Vector3((float)random.Next(-400, 400), (float)random.Next(-400, 400), 0f);
-                Vector3 offset = new Vector3((float)(random.Next(1, 3)==1 ? random.Next(-300, -200) : random.Next(200, 300)), (float)(random.Next(1, 3)==1 ? random.Next(-300, -200) : random.Next(200, 300)), 0f);
-                newFlower.transform.position = gameObject.transform.position + offset;
-                Debug.Log("New flower made!");
 
-                // NOTES: add minimum offset, use parent GameObjects to make sure bees are always on top of flowers
+                // Generate a random offset within two ranges (negative/positive) from the current flower for the X and Y, with a minimum distance to avoid stacking on top of its parent
+                float offsetX = (float)(random.Next(1, 3)==1 ? random.Next(-350, -200) : random.Next(200, 350));
+                float offsetY = (float)(random.Next(1, 3)==1 ? random.Next(-350, -200) : random.Next(200, 350));
+                Vector3 offset = new Vector3(offsetX, offsetY, 0f);
+
+                // Add the offset to the current flower position and set the transform of the new flower to that
+                newFlower.transform.position = gameObject.transform.position + offset;
+
             }
             return true;
         } else {
@@ -78,6 +85,7 @@ public class Flowers : MonoBehaviour
 
     public void SetTarget()
     {
+        // Mark self as targeted by a bee to avoid being targeted by other bees while nectar is being collected
         isTarget = true;
     }
 
