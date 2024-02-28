@@ -1,21 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Hive : MonoBehaviour
 {
 
-    private float honeyRate = 15f;
+    private float honeyRate = 500f;
     private int beeAmount = 2;
     [SerializeField]
     private GameObject beePrefab;
     private int nectar = 0;
     private int honey = 0;
     private float honeyTimer = 0f;
+    private Image hiveSprite;
+    [SerializeField]
+    private Sprite sprite1, sprite2, sprite3;
+    private Sprite[] spriteArray;
 
     // Start is called before the first frame update
     void Start()
     {
+        spriteArray = new Sprite[3] {sprite1, sprite2, sprite3};
+
+        hiveSprite = GetComponent<Image>();
+
         // Find all the flowers and store them in an array to pass to each Bee in their Init function
         GameObject[] flowerArray = GameObject.FindGameObjectsWithTag("Flower");
 
@@ -43,6 +52,11 @@ public class Hive : MonoBehaviour
             honey += 1;
             nectar -= 1;
             honeyTimer = 0f;
+
+            if (honey < 10 && honey % 3 == 0)
+            {
+                hiveSprite.sprite = spriteArray[(honey / 3) - 1];
+            }
         }
         
     }

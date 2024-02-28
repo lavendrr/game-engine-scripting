@@ -60,6 +60,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beePrefab: {fileID: 1073576488778669455, guid: 1daa7694a24e14ebf8c11c0273021a41,
     type: 3}
+  sprite1: {fileID: 21300000, guid: 26e5403aee7ea464a8d99f0190678c7d, type: 3}
+  sprite2: {fileID: 21300000, guid: bc7248160097d48d89588e80d0f2f300, type: 3}
+  sprite3: {fileID: 21300000, guid: 6b44b90d4939e4d57b67169a7c4b023f, type: 3}
 --- !u!114 &7157550044862330122
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 using Random = System.Random;
 
@@ -10,6 +11,9 @@ public class Bee : MonoBehaviour
     private GameObject hive;
     private GameObject[] flowers;
     private bool inProgress;
+    private Image beeSprite;
+    [SerializeField]
+    private Sprite beeNectar, beeEmpty;
     private Random random;
 
     public void Init(GameObject parentHive, GameObject[] flowerArray)
@@ -17,6 +21,7 @@ public class Bee : MonoBehaviour
         hive = parentHive;
         flowers = flowerArray;
         inProgress = false;
+        beeSprite = GetComponent<Image>();
         random = new Random();
     }
 
@@ -44,10 +49,12 @@ public class Bee : MonoBehaviour
             transform.DOMove(targetFlower.transform.position, 2f).OnComplete(() =>
             {
                 flowerScript.GiveNectar();
+                beeSprite.sprite = beeNectar;
 
-                transform.DOMove(hive.transform.position, 1f).OnComplete(() =>
+                transform.DOMove(hive.transform.position, 2f).OnComplete(() =>
                 {
                     hive.GetComponent<Hive>().ReceiveNectar();
+                    beeSprite.sprite = beeEmpty;
                     inProgress = false;
                 });
             });
