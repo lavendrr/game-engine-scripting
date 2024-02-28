@@ -1,3 +1,7 @@
+// Ricky Moctezuma
+// Game Engine Scripting SP 2024
+// Columbia College Chicago
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,36 +10,41 @@ using Random = System.Random;
 
 public class Flowers : MonoBehaviour
 {
-
+    // Initiate values for nectar generation
     private float nectarRate = 800f;
-    private bool hasNectar = false;
     private float nectarCounter = 0f;
-    [SerializeField]
-    private Color fullColor, emptyColor;
-    [SerializeField]
-    private Sprite nectarSprite, emptySprite;
-    private Image flowerSprite;
-    private Random random;
-    private bool isTarget = false;
+    private bool hasNectar = false;
+    
+    // Get a reference to the flower prefab and instantiate values for flower generation
     [SerializeField]
     private GameObject flowerPrefab;
     private int maxFlowers = 15;
+    private bool isTarget = false;
+
+    // Get references to the nectar and non-nectar sprites and get the image component of the flower
+    [SerializeField]
+    private Sprite nectarSprite, emptySprite;
+    private Image flowerSprite;
+
+    private Random random;
 
     void Start()
     {
         random = new Random();
+        // Add a random offset to the nectar generation rate
         nectarRate += random.Next(-250, 500);
         flowerSprite = GetComponent<Image>();
     }
 
-    // Update is called once per frame
     void Update()
     {
+        // If the flower doesn't have nectar and the nectar counter is below the rate value, increment the nectar counter
         if (hasNectar == false && nectarCounter < nectarRate)
         {
             nectarCounter += 1f;
-            //Debug.Log("Incremented nectar!");
-        } else if (hasNectar == false && nectarCounter >= nectarRate)
+        } 
+        // Once the nectar counter has reached the nectar rate value, set nectar status to true, reset the nectar counter, and update the sprite
+        else if (hasNectar == false && nectarCounter >= nectarRate)
         {
             hasNectar = true;
             nectarCounter = 0f;
