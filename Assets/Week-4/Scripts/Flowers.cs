@@ -23,7 +23,6 @@ public class Flowers : MonoBehaviour
         random = new Random();
         nectarRate += random.Next(-250, 500);
         flowerSprite = GetComponent<Image>();
-        Debug.Log(nectarRate);
     }
 
     // Update is called once per frame
@@ -38,7 +37,6 @@ public class Flowers : MonoBehaviour
             hasNectar = true;
             nectarCounter = 0f;
             flowerSprite.sprite = nectarSprite;
-            Debug.Log("Nectar ready!");
         }
     }
 
@@ -54,7 +52,6 @@ public class Flowers : MonoBehaviour
             hasNectar = false;
             flowerSprite.sprite = emptySprite;
             isTarget = false;
-            Debug.Log("Nectar taken!");
             return true;
         } else {
             return false;
