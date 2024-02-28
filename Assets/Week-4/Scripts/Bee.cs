@@ -58,7 +58,7 @@ public class Bee : MonoBehaviour
         GameObject targetFlower = flowerArray[random.Next(0, flowerArray.Length)];
 
         // Get the flower's script component and store it
-        Flowers flowerScript = targetFlower.GetComponent<Flowers>();
+        Flower flowerScript = targetFlower.GetComponent<Flower>();
 
         // If the flower has nectar and is not already the target of another bee, begin nectar retrieval
         if (flowerScript.GetNectarStatus() == true && flowerScript.GetTargetStatus() == false)

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
 
-public class Flowers : MonoBehaviour
+public class Flower : MonoBehaviour
 {
     // Initiate values for nectar generation
     private float nectarRate = 800f;
