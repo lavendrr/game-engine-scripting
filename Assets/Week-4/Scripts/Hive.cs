@@ -86,8 +86,8 @@ public class Hive : MonoBehaviour
         for (int i = 0; i < beeAmt; i++)
         {
             GameObject bee = Instantiate(beePrefab, canvas);
-            bee.transform.position = transform.position;
-            bee.GetComponent<Bee>().Init(gameObject, flowerArray);
+            Vector3 offset = bee.GetComponent<Bee>().Init(gameObject, flowerArray);
+            bee.transform.position = transform.position + offset;
         }
     }
 }

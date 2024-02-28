@@ -15,14 +15,17 @@ public class Bee : MonoBehaviour
     [SerializeField]
     private Sprite beeNectar, beeEmpty;
     private Random random;
+    private Vector3 offset;
 
-    public void Init(GameObject parentHive, GameObject[] flowerArray)
+    public Vector3 Init(GameObject parentHive, GameObject[] flowerArray)
     {
         hive = parentHive;
         flowers = flowerArray;
         inProgress = false;
         beeSprite = GetComponent<Image>();
         random = new Random();
+        offset = new Vector3((float)random.Next(-100, 100), (float)random.Next(-100, 100), 0f);
+        return offset;
     }
 
     // Update is called once per frame
@@ -51,7 +54,7 @@ public class Bee : MonoBehaviour
                 flowerScript.GiveNectar();
                 beeSprite.sprite = beeNectar;
 
-                transform.DOMove(hive.transform.position, 2f).OnComplete(() =>
+                transform.DOMove(hive.transform.position + offset, 2f).OnComplete(() =>
                 {
                     hive.GetComponent<Hive>().ReceiveNectar();
                     beeSprite.sprite = beeEmpty;
