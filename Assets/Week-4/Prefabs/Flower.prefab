@@ -54,6 +54,7 @@ MonoBehaviour:
   emptyColor: {r: 1, g: 1, b: 1, a: 1}
   nectarSprite: {fileID: 21300000, guid: a27e2ca6cc71e4542a20f8a2e350074c, type: 3}
   emptySprite: {fileID: 21300000, guid: eb02e9e66435240ce944395bed223ea6, type: 3}
+  flowerPrefab: {fileID: 2528580674329395882}
 --- !u!222 &2222236474014812886
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -17,6 +17,9 @@ public class Flowers : MonoBehaviour
     private Image flowerSprite;
     private Random random;
     private bool isTarget = false;
+    [SerializeField]
+    private GameObject flowerPrefab;
+    private int maxFlowers = 15;
 
     void Start()
     {
@@ -52,6 +55,16 @@ public class Flowers : MonoBehaviour
             hasNectar = false;
             flowerSprite.sprite = emptySprite;
             isTarget = false;
+            if (random.Next(-1, 100) <= 20 && GameObject.FindGameObjectsWithTag("Flower").Length <= maxFlowers)
+            {
+                GameObject newFlower = Instantiate(flowerPrefab, GameObject.Find("FlowerParent").transform);
+                //Vector3 offset = new Vector3((float)random.Next(-400, 400), (float)random.Next(-400, 400), 0f);
+                Vector3 offset = new Vector3((float)(random.Next(1, 3)==1 ? random.Next(-300, -200) : random.Next(200, 300)), (float)(random.Next(1, 3)==1 ? random.Next(-300, -200) : random.Next(200, 300)), 0f);
+                newFlower.transform.position = gameObject.transform.position + offset;
+                Debug.Log("New flower made!");
+
+                // NOTES: add minimum offset, use parent GameObjects to make sure bees are always on top of flowers
+            }
             return true;
         } else {
             return false;

@@ -77,16 +77,13 @@ public class Hive : MonoBehaviour
 
     private void MakeBees(int beeAmt)
     {
-        // Find all the flowers and store them in an array to pass to each Bee in their Init function
-        GameObject[] flowerArray = GameObject.FindGameObjectsWithTag("Flower");
-
-        Transform canvas = GameObject.Find("Canvas").transform;
+        Transform canvas = GameObject.Find("BeeParent").transform;
 
         // Instantiate bees up to the assigned beeAmount, parent them to the hive, and call their Init function so they know which hive created them
         for (int i = 0; i < beeAmt; i++)
         {
             GameObject bee = Instantiate(beePrefab, canvas);
-            Vector3 offset = bee.GetComponent<Bee>().Init(gameObject, flowerArray);
+            Vector3 offset = bee.GetComponent<Bee>().Init(gameObject);
             bee.transform.position = transform.position + offset;
         }
     }

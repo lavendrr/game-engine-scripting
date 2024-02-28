@@ -9,7 +9,7 @@ public class Bee : MonoBehaviour
 {
 
     private GameObject hive;
-    private GameObject[] flowers;
+    private GameObject[] flowerArray;
     private bool inProgress;
     private Image beeSprite;
     [SerializeField]
@@ -17,10 +17,9 @@ public class Bee : MonoBehaviour
     private Random random;
     private Vector3 offset;
 
-    public Vector3 Init(GameObject parentHive, GameObject[] flowerArray)
+    public Vector3 Init(GameObject parentHive)
     {
         hive = parentHive;
-        flowers = flowerArray;
         inProgress = false;
         beeSprite = GetComponent<Image>();
         random = new Random();
@@ -28,11 +27,11 @@ public class Bee : MonoBehaviour
         return offset;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (inProgress == false)
         {
+            flowerArray = GameObject.FindGameObjectsWithTag("Flower");
             CheckAnyFlower();
         }
     }
@@ -41,7 +40,7 @@ public class Bee : MonoBehaviour
     {
         inProgress = true;
 
-        GameObject targetFlower = flowers[random.Next(0, flowers.Length)];
+        GameObject targetFlower = flowerArray[random.Next(0, flowerArray.Length)];
 
         Flowers flowerScript = targetFlower.GetComponent<Flowers>();
 
