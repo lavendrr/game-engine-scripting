@@ -39,24 +39,11 @@ public class BladeManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
         spriteArray = Resources.LoadAll<Sprite>("Card Sprites");
 
-        AssignCards();
+        // AssignCards();
 
-        // Instantiate 10 cards and assign their sprites based on their corresponding values from the hand array
-        for (int i = 0; i < 10; i++)
-        {
-            GameObject card1 = Instantiate(playerCardPrefab, hand1Obj);
-            Image img1 = card1.GetComponent<Image>();
-            img1.sprite = spriteArray[hand1[i] - 1];
-
-            // Set all of Player's 2 cards to use the card back sprite since they are hidden
-            GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
-            Image img2 = card2.GetComponent<Image>();
-            img2.sprite = spriteArray[9];
-        }
-        
+        // StartCoroutine(CreateCards());
     }
 
     // Update is called once per frame
@@ -89,6 +76,24 @@ public class BladeManager : MonoBehaviour
         Array.Sort(hand1);
         Array.Sort(hand2);
 
+    }
+
+    public IEnumerator CreateCards()
+    {
+        // Instantiate 10 cards and assign their sprites based on their corresponding values from the hand array
+        for (int i = 0; i < 10; i++)
+        {
+            GameObject card1 = Instantiate(playerCardPrefab, hand1Obj);
+            Image img1 = card1.GetComponent<Image>();
+            img1.sprite = spriteArray[hand1[i] - 1];
+            yield return new WaitForSeconds(0.3f);
+
+            // Set all of Player 2's cards to use the card back sprite since they are hidden
+            GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
+            Image img2 = card2.GetComponent<Image>();
+            img2.sprite = spriteArray[9];
+            yield return new WaitForSeconds(0.3f);
+        }
     }
 
     public void blade_test(GameObject card)
