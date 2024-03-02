@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3632097302242668436}
   - component: {fileID: 5872269786311408430}
   - component: {fileID: 205048372596329768}
-  - component: {fileID: 2820420998073342447}
+  - component: {fileID: -1632757788331365403}
   m_Layer: 5
   m_Name: PlayerCard
   m_TagString: Untagged
@@ -122,19 +122,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2820420998073342447}
+      - m_Target: {fileID: -1632757788331365403}
         m_TargetAssemblyTypeName: CardClick, Assembly-CSharp
         m_MethodName: test
-        m_Mode: 2
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 264265350761587932}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &2820420998073342447
+--- !u!114 &-1632757788331365403
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

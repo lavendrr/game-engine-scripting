@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class CardClick : MonoBehaviour
 {
-    public void test(GameObject cardObj)
+    private BladeManager blade;
+
+    public void assignBladeRef(BladeManager bladeScript)
     {
-        GameObject blade = GameObject.Find("BladeObject");
-        blade.GetComponent<BladeManager>().blade_test(cardObj);
+        blade = bladeScript;
     }
+    
+    public void test()
+    {
+        blade.blade_test(gameObject);
+    }
+
 
 }
