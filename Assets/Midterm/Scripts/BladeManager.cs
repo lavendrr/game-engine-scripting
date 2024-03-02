@@ -99,9 +99,22 @@ public class BladeManager : MonoBehaviour
         stack1 += hand1[index];
         card.SetActive(false);
         stack1Text.text = stack1.ToString();
+
+        if (stack1 > stack2)
+        {
+            sc.ChangeState(sc.PCActionState, 1.5f);
+        }
+        else if (stack1 == stack2)
+        {
+            sc.ChangeState(sc.DrawState, 1.5f);
+        }
+        else if (stack1 < stack2)
+        {
+            sc.ChangeState(sc.GameEndState, 1.5f);
+        }
     }
 
-    public IEnumerator Draw(int index)
+    public void Draw(int index)
     {
         stack1 += deck1[index];
         stack1Text.text = stack1.ToString();
@@ -120,21 +133,24 @@ public class BladeManager : MonoBehaviour
 
         if (stack1 > stack2)
         {
-            sc.ChangeState(sc.PCActionState, 1.3f);
+            sc.ChangeState(sc.PCActionState, 1.5f);
         }
         else if (stack2 > stack1)
         {
-            sc.ChangeState(sc.PlayerActionState, 1.3f);
+            sc.ChangeState(sc.PlayerActionState, 1.5f);
         }
         else if (stack1 == stack2)
         {
             sc.ChangeState(sc.DrawState, 1.5f);
-            yield return new WaitForSeconds(1.5f);
-            stack1 = 0;
-            stack2 = 0;
-            stack1Text.text = "";
-            stack2Text.text = "";
         }
+    }
+
+    public void Redraw()
+    {
+        stack1 = 0;
+        stack2 = 0;
+        stack1Text.text = "";
+        stack2Text.text = "";
     }
 
 }

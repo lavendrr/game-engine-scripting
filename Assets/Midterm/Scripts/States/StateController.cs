@@ -116,6 +116,7 @@ public class DrawState : State
     {
         Debug.Log("Entered Draw state!");
         base.OnEnter();
+        blade.Redraw();
         GameObject.Find("Deck1").GetComponent<Button>().interactable = true;
     }
 
@@ -156,5 +157,11 @@ public class PCActionState : State
 public class GameEndState : State
 {
     public GameEndState(BladeManager bladeScript, StateController stateController) : base(bladeScript, stateController){}
-    
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Debug.Log("Entered game end state!");
+    }
+
 }

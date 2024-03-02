@@ -11,7 +11,8 @@ public class DeckDraw : MonoBehaviour
 
     public void Draw()
     {
-        StartCoroutine(blade.Draw(count));
+        //StartCoroutine(blade.Draw(count));
+        blade.Draw(count);
         count += 1;
     }
 }
