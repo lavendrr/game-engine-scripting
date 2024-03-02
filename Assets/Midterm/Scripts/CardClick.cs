@@ -6,15 +6,14 @@ public class CardClick : MonoBehaviour
 {
     private BladeManager blade;
 
-    public void assignBladeRef(BladeManager bladeScript)
+    public void AssignBladeRef(BladeManager bladeScript)
     {
         blade = bladeScript;
     }
     
-    public void test()
+    public void PlayCard()
     {
-        blade.blade_test(gameObject);
+        blade.PlayCard(gameObject);
     }
-
 
 }

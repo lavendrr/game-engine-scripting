@@ -18,8 +18,6 @@ public class BladeManager : MonoBehaviour
 
     [SerializeField]
     GameObject playerCardPrefab;
-    // [SerializeField]
-    // Sprite cardback, card1, card2, card3, card4, card5, card6, card7, cardbolt, cardmirror;
 
     [SerializeField]
     Transform hand1Obj, hand2Obj;
@@ -42,33 +40,17 @@ public class BladeManager : MonoBehaviour
     [SerializeField]
     private int[] deck2;
 
-    // Start is called before the first frame update
     void Start()
     {
         spriteArray = Resources.LoadAll<Sprite>("Card Sprites");
 
         sc = gameObject.GetComponent<StateController>();
-
-        // AssignCards();
-
-        // StartCoroutine(CreateCards());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void AssignCards()
     {
         Random rng = new Random();
         int[] randomDeck = totalDeck.OrderBy(x => rng.Next()).ToArray();
-
-        // foreach (int item in randomDeck)
-        // {
-        //     Debug.Log(item);
-        // }
 
         deck1 = new int[6];
         deck2 = new int[6];
@@ -92,7 +74,7 @@ public class BladeManager : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             GameObject card1 = Instantiate(playerCardPrefab, hand1Obj);
-            card1.GetComponent<CardClick>().assignBladeRef(this);
+            card1.GetComponent<CardClick>().AssignBladeRef(this);
             Image img1 = card1.GetComponent<Image>();
             img1.sprite = spriteArray[hand1[i] - 1];
             yield return new WaitForSeconds(0.3f);
@@ -110,12 +92,11 @@ public class BladeManager : MonoBehaviour
         done(true);
     }
 
-    public void blade_test(GameObject card)
+    public void PlayCard(GameObject card)
     {
         Debug.Log("Clicked!");
         int index = card.transform.GetSiblingIndex();
         stack1 += hand1[index];
-        //hand1 = RemoveAt(hand1, index);
         card.SetActive(false);
         stack1Text.text = stack1.ToString();
     }
@@ -155,12 +136,5 @@ public class BladeManager : MonoBehaviour
             stack2Text.text = "";
         }
     }
-
-    // int[] RemoveAt(int[] arr, int index)
-    // {
-    //     var output = new List<int>(arr);
-    //     output.RemoveAt(index);
-    //     return output.ToArray();
-    // }
 
 }

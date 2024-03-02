@@ -124,7 +124,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: -1632757788331365403}
         m_TargetAssemblyTypeName: CardClick, Assembly-CSharp
-        m_MethodName: test
+        m_MethodName: PlayCard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
