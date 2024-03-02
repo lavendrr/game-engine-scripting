@@ -83,6 +83,7 @@ public class BladeManager : MonoBehaviour
             GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
             Image img2 = card2.GetComponent<Image>();
             img2.sprite = spriteArray[9];
+            //img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
             yield return new WaitForSeconds(0.3f);
         }
 
@@ -94,7 +95,6 @@ public class BladeManager : MonoBehaviour
 
     public void PlayCard(GameObject card)
     {
-        Debug.Log("Clicked!");
         int index = card.transform.GetSiblingIndex();
         stack1 += hand1[index];
         card.SetActive(false);
@@ -111,6 +111,60 @@ public class BladeManager : MonoBehaviour
         else if (stack1 < stack2)
         {
             sc.ChangeState(sc.GameEndState, 1.5f);
+            Debug.Log("Player 1 lost");
+        }
+    }
+
+    public void PCPlayCard()
+    {
+        int stackDifference = stack1 - stack2;
+        int index = 0;
+        int nearestDifference = 100;
+        GameObject nearestObj = null;
+
+        // Algorithm to find the card that surpasses the opponent's total by the smallest amount, or selects a card that equals the opponent's total if there is nothing to surpass the opponent
+        foreach (int card in hand2)
+        {
+            GameObject cardObj = hand2Obj.transform.GetChild(index).gameObject;
+
+            if (cardObj.activeSelf)
+            {
+                if (card > stackDifference)
+                {
+                    if (card - stackDifference < nearestDifference)
+                    {
+                        nearestDifference = card - stackDifference;
+                        nearestObj = cardObj;
+                    }
+                }
+                else if (card == stackDifference && nearestObj == null)
+                {
+                    nearestObj = cardObj;
+                }
+            }
+
+            index++;
+        }
+
+        if (nearestObj != null)
+        {
+            stack2 += hand2[nearestObj.transform.GetSiblingIndex()];
+            nearestObj.SetActive(false);
+            stack2Text.text = stack2.ToString();
+
+            if (stack2 == stack1)
+            {
+                sc.ChangeState(sc.DrawState, 1.5f);
+            }
+            else if (stack2 > stack1)
+            {
+                sc.ChangeState(sc.PlayerActionState, 1.5f);
+            }
+        }
+        else
+        {
+            sc.ChangeState(sc.GameEndState, 1.5f);
+            Debug.Log("Player 2 lost");
         }
     }
 
@@ -151,6 +205,16 @@ public class BladeManager : MonoBehaviour
         stack2 = 0;
         stack1Text.text = "";
         stack2Text.text = "";
+    }
+
+    public void CheckPlayerCardsLeft()
+    {
+        // Check if the player has 0 active children left (subtract 1 to discount the parent's transform) and trigger a loss if true
+        if (hand1Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 == 0)
+        {
+            sc.ChangeState(sc.GameEndState, 0f);
+            Debug.Log("Player 1 lost");
+        }
     }
 
 }

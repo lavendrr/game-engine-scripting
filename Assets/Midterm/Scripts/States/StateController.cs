@@ -137,7 +137,17 @@ public class PlayerActionState : State
     {
         Debug.Log("Entering Player Action State!");
         base.OnEnter();
+
+        blade.CheckPlayerCardsLeft();
+
         GameObject.Find("Hand1").GetComponent<CanvasGroup>().interactable = true;
+    }
+
+    public override void OnExit()
+    {
+        Debug.Log("Exiting Player Action State!");
+        base.OnExit();
+        GameObject.Find("Hand1").GetComponent<CanvasGroup>().interactable = false;
     }
 
 }
@@ -150,6 +160,13 @@ public class PCActionState : State
     {
         Debug.Log("Entering PC Action State!");
         base.OnEnter();
+        blade.PCPlayCard();
+    }
+
+    public override void OnExit()
+    {
+        Debug.Log("Exiting PC Action State!");
+        base.OnExit();
     }
 
 }
