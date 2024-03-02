@@ -42,8 +42,7 @@ public class StateController : MonoBehaviour
             currentState.OnExit();
         }
         currentState = newState;
-        //currentState.OnEnter();
-        StartCoroutine(currentState.OnEnter());
+        currentState.OnEnter();
     }
 }
 
@@ -58,9 +57,9 @@ public abstract class State
         sc = stateController;
     }
 
-    public virtual IEnumerator OnEnter()
+    public virtual void OnEnter()
     {
-        yield return null;
+
     }
 
     public virtual void OnUpdate()
@@ -78,21 +77,21 @@ public class DrawState : State
 {
     public DrawState(BladeManager bladeScript, StateController stateController) : base(bladeScript, stateController){}
 
-    public override IEnumerator OnEnter()
+    public override void OnEnter()
     {
         Debug.Log("Entering Draw State");
         base.OnEnter();
         blade.AssignCards();
-        yield return blade.StartCoroutine(blade.CreateCards());
-        Debug.Log("Changing state after coroutine");
-        sc.ChangeState(sc.PlayerActionState);
+        blade.StartCoroutine(blade.CreateCards(done => {
+            Debug.Log("Changing state after coroutine");
+            sc.ChangeState(sc.PlayerActionState);
+        }));
     }
 
     public override void OnExit()
     {
         base.OnExit();
         Debug.Log("Exiting draw state!");
-        //sc.ChangeState(sc.PlayerActionState);
     }
 
 }
@@ -101,12 +100,11 @@ public class PlayerActionState : State
 {
     public PlayerActionState(BladeManager bladeScript, StateController stateController) : base(bladeScript, stateController){}
 
-    public override IEnumerator OnEnter()
+    public override void OnEnter()
     {
         Debug.Log("Entering Player Action State!");
         base.OnEnter();
         GameObject.Find("Hand1").GetComponent<CanvasGroup>().interactable = true;
-        yield return null;
     }
 
 }

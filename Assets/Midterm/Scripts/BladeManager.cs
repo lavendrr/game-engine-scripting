@@ -78,7 +78,7 @@ public class BladeManager : MonoBehaviour
 
     }
 
-    public IEnumerator CreateCards()
+    public IEnumerator CreateCards(System.Action<bool> done)
     {
         // Instantiate 10 cards and assign their sprites based on their corresponding values from the hand array
         for (int i = 0; i < 10; i++)
@@ -94,6 +94,7 @@ public class BladeManager : MonoBehaviour
             img2.sprite = spriteArray[9];
             yield return new WaitForSeconds(0.3f);
         }
+        done(true);
     }
 
     public void blade_test(GameObject card)
