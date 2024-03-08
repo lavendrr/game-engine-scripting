@@ -106,15 +106,6 @@ public class BladeManager : MonoBehaviour
 
         bool opponentBolted = false;
 
-        // If the most recent card you played was a bolt, remove it
-        // if (playOrder1.Count != 0)
-        // {
-        //     if (playOrder1[playOrder1.Count - 1] == -1)
-        //     {
-        //         playOrder1.RemoveAt(playOrder1.Count - 1);
-        //     }
-        // }
-
         if (playOrder2[playOrder2.Count - 1] == -1)
         {
             opponentBolted = true;
@@ -143,10 +134,6 @@ public class BladeManager : MonoBehaviour
                 Debug.Log("Player 1 lost due to playing a bolt card as their last card");
                 return;
             }
-            // In case the opponent just bolted, remove that from the play order to bolt their last number card
-            playOrder2.Remove(-1);
-
-            Debug.Log("Bolting this: " + playOrder2[playOrder2.Count - 1].ToString());
             recentBolt = playOrder2[playOrder2.Count - 1];
             stack2 -= playOrder2[playOrder2.Count - 1];
             playOrder2.RemoveAt(playOrder2.Count - 1);
@@ -269,7 +256,6 @@ public class BladeManager : MonoBehaviour
         {
             if (oneObj != null && tryUndoBolt == true)
             {
-                playOrder1.RemoveAt(playOrder1.Count - 1);
                 stack2 += recentBolt;
                 playOrder2.Add(recentBolt);
                 recentBolt = 0;
