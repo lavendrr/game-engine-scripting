@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
 using TMPro;
+using Unity.VisualScripting;
 
 
 public class BladeManager : MonoBehaviour
@@ -100,8 +101,16 @@ public class BladeManager : MonoBehaviour
     {
         int index = card.transform.GetSiblingIndex();
 
+        bool oneCardLeft = hand1Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 == 1;
+
         if (hand1[index] == 9) // Mirror
         {
+            if (oneCardLeft == true)
+            {
+                sc.ChangeState(sc.GameEndState, 0f);
+                Debug.Log("Player 1 lost due to playing a mirror card as their last card");
+                return;
+            }
             // Use C# tuple functionality to swap the values of the two stacks and play orders
             (stack1, stack2) = (stack2, stack1);
             (playOrder1, playOrder2) = (playOrder2, playOrder1);
@@ -110,6 +119,12 @@ public class BladeManager : MonoBehaviour
         }
         else if (hand1[index] == 8) // Bolt
         {
+            if (oneCardLeft == true)
+            {
+                sc.ChangeState(sc.GameEndState, 0f);
+                Debug.Log("Player 1 lost due to playing a bolt card as their last card");
+                return;
+            }
             Debug.Log("Bolting this: " + playOrder2[playOrder2.Count - 1].ToString());
             stack2 -= playOrder2[playOrder2.Count - 1];
             playOrder2.RemoveAt(playOrder2.Count - 1);
@@ -150,12 +165,14 @@ public class BladeManager : MonoBehaviour
         GameObject boltObj = null;
         bool tryMirror = false;
         bool tryBolt = false;
+        int numActiveNumberCards = 0;
 
         if (playOrder1[playOrder1.Count - 1] > 4)
         {
             tryBolt = true;
         }
-        else if (stackDifference > 2)
+        
+        if (stackDifference > 2)
         {
             tryMirror = true;
         }
@@ -170,6 +187,8 @@ public class BladeManager : MonoBehaviour
                 // Don't include bolt and mirror cards in the value checks
                 if (card != 8 && card != 9)
                 {
+                    numActiveNumberCards += 1;
+
                     if (card > stackDifference)
                     {
                         if (card - stackDifference < nearestDifference)
@@ -183,11 +202,11 @@ public class BladeManager : MonoBehaviour
                         nearestObj = cardObj;
                     }
                 }
-                else if (tryBolt == true && card == 8 && boltObj == null)
+                else if (card == 8 && boltObj == null)
                 {
                     boltObj = cardObj;
                 }
-                else if (tryMirror == true && card == 9 && mirrorObj == null)
+                else if (card == 9 && mirrorObj == null)
                 {
                     mirrorObj = cardObj;
                 }
@@ -197,9 +216,9 @@ public class BladeManager : MonoBehaviour
         }
 
 
-        if (nearestObj != null)
+        if (nearestObj != null || boltObj != null || mirrorObj != null)
         {
-            if (boltObj != null)
+            if (boltObj != null && tryBolt == true)
             {
                 Debug.Log("Bolting this: " + playOrder1[playOrder1.Count - 1].ToString());
                 stack1 -= playOrder1[playOrder1.Count - 1];
@@ -207,12 +226,30 @@ public class BladeManager : MonoBehaviour
                 stack1Text.text = stack1.ToString();
                 boltObj.SetActive(false);
             }
-            else if (mirrorObj != null)
+            else if (mirrorObj != null && tryMirror == true)
             {
                 (stack1, stack2) = (stack2, stack1);
                 (playOrder1, playOrder2) = (playOrder2, playOrder1);
                 stack1Text.text = stack1.ToString();
                 mirrorObj.SetActive(false);
+            }
+            else if ((numActiveNumberCards == 1 && hand2Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 > 1) || nearestObj == null)
+            {
+                if (boltObj != null)
+                {
+                    Debug.Log("Bolting this: " + playOrder1[playOrder1.Count - 1].ToString());
+                    stack1 -= playOrder1[playOrder1.Count - 1];
+                    playOrder1.RemoveAt(playOrder1.Count - 1);
+                    stack1Text.text = stack1.ToString();
+                    boltObj.SetActive(false);
+                }
+                else if (mirrorObj != null)
+                {
+                    (stack1, stack2) = (stack2, stack1);
+                    (playOrder1, playOrder2) = (playOrder2, playOrder1);
+                    stack1Text.text = stack1.ToString();
+                    mirrorObj.SetActive(false);
+                }
             }
             else
             {
