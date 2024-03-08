@@ -34,6 +34,7 @@ public class BladeManager : MonoBehaviour
 
     [SerializeField]
     private List<int> playOrder1, playOrder2 = new List<int>();
+    private int recentBolt = 0;
 
     [SerializeField]
     private int[] hand1;
@@ -86,8 +87,8 @@ public class BladeManager : MonoBehaviour
             // Set all of Player 2's cards to use the card back sprite since they are hidden
             GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
             Image img2 = card2.GetComponent<Image>();
-            img2.sprite = spriteArray[9];
-            //img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
+            //img2.sprite = spriteArray[9];
+            img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
             yield return new WaitForSeconds(0.3f);
         }
 
@@ -102,6 +103,15 @@ public class BladeManager : MonoBehaviour
         int index = card.transform.GetSiblingIndex();
 
         bool oneCardLeft = hand1Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 == 1;
+
+        // If the most recent card you played was a bolt, remove it
+        if (playOrder1.Count != 0)
+        {
+            if (playOrder1[playOrder1.Count - 1] == -1)
+            {
+                playOrder1.RemoveAt(playOrder1.Count - 1);
+            }
+        }
 
         if (hand1[index] == 9) // Mirror
         {
@@ -125,16 +135,27 @@ public class BladeManager : MonoBehaviour
                 Debug.Log("Player 1 lost due to playing a bolt card as their last card");
                 return;
             }
+            // In case the opponent just bolted, remove that from the play order to bolt their last number card
+            playOrder2.Remove(-1);
+
             Debug.Log("Bolting this: " + playOrder2[playOrder2.Count - 1].ToString());
+            recentBolt = playOrder2[playOrder2.Count - 1];
             stack2 -= playOrder2[playOrder2.Count - 1];
             playOrder2.RemoveAt(playOrder2.Count - 1);
             stack2Text.text = stack2.ToString();
+            playOrder1.Add(-1);
+        }
+        else if (hand1[index] == 1 && playOrder2[playOrder2.Count - 1] == -1) // Using a 1 to undo a Bolt
+        {
+            playOrder2.RemoveAt(playOrder2.Count - 1);
+            stack1 += recentBolt;
+            playOrder1.Add(recentBolt);
+            recentBolt = 0;
         }
         else
         {
             stack1 += hand1[index];
             playOrder1.Add(hand1[index]);
-            Debug.Log(playOrder1.ToString());
         }
 
         card.SetActive(false);
@@ -163,9 +184,19 @@ public class BladeManager : MonoBehaviour
         GameObject nearestObj = null;
         GameObject mirrorObj = null;
         GameObject boltObj = null;
+        GameObject oneObj = null;
         bool tryMirror = false;
         bool tryBolt = false;
+        bool tryUndoBolt = false;
         int numActiveNumberCards = 0;
+
+        if (playOrder2.Count != 0)
+        {
+            if (playOrder2[playOrder2.Count - 1] == -1)
+            {
+                playOrder2.RemoveAt(playOrder2.Count - 1);
+            }
+        }
 
         if (playOrder1[playOrder1.Count - 1] > 4)
         {
@@ -175,6 +206,11 @@ public class BladeManager : MonoBehaviour
         if (stackDifference > 2)
         {
             tryMirror = true;
+        }
+
+        if (playOrder1[playOrder1.Count - 1] == -1)
+        {
+            tryUndoBolt = true;
         }
 
         // Algorithm to find the card that surpasses the opponent's total by the smallest amount, or selects a card that equals the opponent's total if there is nothing to surpass the opponent
@@ -201,6 +237,11 @@ public class BladeManager : MonoBehaviour
                     {
                         nearestObj = cardObj;
                     }
+
+                    if (card == 1 && oneObj == null)
+                    {
+                        oneObj = cardObj;
+                    }
                 }
                 else if (card == 8 && boltObj == null)
                 {
@@ -218,12 +259,26 @@ public class BladeManager : MonoBehaviour
 
         if (nearestObj != null || boltObj != null || mirrorObj != null)
         {
-            if (boltObj != null && tryBolt == true)
+            if (oneObj != null && tryUndoBolt == true)
             {
+                Debug.Log("Removing this index: " + (playOrder1.Count - 1).ToString());
+                playOrder1.RemoveAt(playOrder1.Count - 1);
+                stack2 += recentBolt;
+                playOrder2.Add(recentBolt);
+                recentBolt = 0;
+                oneObj.SetActive(false);
+            }
+            else if (boltObj != null && tryBolt == true)
+            {
+                // In case the player just bolted, remove that from the play order to bolt their last number card
+                playOrder1.Remove(-1);
+
                 Debug.Log("Bolting this: " + playOrder1[playOrder1.Count - 1].ToString());
+                recentBolt = playOrder1[playOrder1.Count - 1];
                 stack1 -= playOrder1[playOrder1.Count - 1];
                 playOrder1.RemoveAt(playOrder1.Count - 1);
                 stack1Text.text = stack1.ToString();
+                playOrder2.Add(-1);
                 boltObj.SetActive(false);
             }
             else if (mirrorObj != null && tryMirror == true)
@@ -278,6 +333,10 @@ public class BladeManager : MonoBehaviour
 
     public void Draw(int index)
     {
+        // Clear the playOrder lists and add the new starting stack value to them
+        playOrder1.Clear();
+        playOrder2.Clear();
+
         // Player drawing
         if (deck1[index] == 8 || deck1[index] == 9)
         {
@@ -314,12 +373,8 @@ public class BladeManager : MonoBehaviour
             deck2Obj.SetActive(false);
         }
 
-        // Clear the playOrder lists and add the new starting stack value to them
-        playOrder1.Clear();
-        playOrder2.Clear();
         playOrder1.Add(stack1);
         playOrder2.Add(stack2);
-
 
         if (stack1 > stack2)
         {
