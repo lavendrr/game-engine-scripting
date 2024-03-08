@@ -32,6 +32,9 @@ public class BladeManager : MonoBehaviour
     private int stack2 = 0;
 
     [SerializeField]
+    private List<int> playOrder1, playOrder2 = new List<int>();
+
+    [SerializeField]
     private int[] hand1;
     [SerializeField]
     private int[] deck1;
@@ -99,14 +102,24 @@ public class BladeManager : MonoBehaviour
 
         if (hand1[index] == 9)
         {
-            // Use C# tuple functionality to swap the values of the two stacks
+            // Use C# tuple functionality to swap the values of the two stacks and play orders
             (stack1, stack2) = (stack2, stack1);
+            (playOrder1, playOrder2) = (playOrder2, playOrder1);
             // Make sure to update opponent's stack text since you changed it
+            stack2Text.text = stack2.ToString();
+        }
+        else if (hand1[index] == 8)
+        {
+            Debug.Log("Bolting this: " + playOrder2[playOrder2.Count - 1].ToString());
+            stack2 -= playOrder2[playOrder2.Count - 1];
+            playOrder2.RemoveAt(playOrder2.Count - 1);
             stack2Text.text = stack2.ToString();
         }
         else
         {
             stack1 += hand1[index];
+            playOrder1.Add(hand1[index]);
+            Debug.Log(playOrder1.ToString());
         }
 
         card.SetActive(false);
@@ -133,6 +146,13 @@ public class BladeManager : MonoBehaviour
         int index = 0;
         int nearestDifference = 100;
         GameObject nearestObj = null;
+        GameObject mirrorObj = null;
+        bool tryMirror = false;
+
+        if (stackDifference > 2)
+        {
+            tryMirror = true;
+        }
 
         // Algorithm to find the card that surpasses the opponent's total by the smallest amount, or selects a card that equals the opponent's total if there is nothing to surpass the opponent
         foreach (int card in hand2)
@@ -141,27 +161,48 @@ public class BladeManager : MonoBehaviour
 
             if (cardObj.activeSelf)
             {
-                if (card > stackDifference)
+                // Don't include bolt and mirror cards in the value checks
+                if (card != 8 && card != 9)
                 {
-                    if (card - stackDifference < nearestDifference)
+                    if (card > stackDifference)
                     {
-                        nearestDifference = card - stackDifference;
+                        if (card - stackDifference < nearestDifference)
+                        {
+                            nearestDifference = card - stackDifference;
+                            nearestObj = cardObj;
+                        }
+                    }
+                    else if (card == stackDifference && nearestObj == null)
+                    {
                         nearestObj = cardObj;
                     }
                 }
-                else if (card == stackDifference && nearestObj == null)
+                else if (tryMirror == true && card == 9 && mirrorObj == null)
                 {
-                    nearestObj = cardObj;
+                    mirrorObj = cardObj;
                 }
             }
-
+            
             index++;
         }
 
+
         if (nearestObj != null)
         {
-            stack2 += hand2[nearestObj.transform.GetSiblingIndex()];
-            nearestObj.SetActive(false);
+            if (mirrorObj != null)
+            {
+                (stack1, stack2) = (stack2, stack1);
+                (playOrder1, playOrder2) = (playOrder2, playOrder1);
+                stack1Text.text = stack1.ToString();
+                mirrorObj.SetActive(false);
+            }
+            else
+            {
+                stack2 += hand2[nearestObj.transform.GetSiblingIndex()];
+                playOrder2.Add(hand2[nearestObj.transform.GetSiblingIndex()]);
+                nearestObj.SetActive(false);
+            }
+
             stack2Text.text = stack2.ToString();
 
             if (stack2 == stack1)
@@ -182,6 +223,7 @@ public class BladeManager : MonoBehaviour
 
     public void Draw(int index)
     {
+        // Player drawing
         if (deck1[index] == 8 || deck1[index] == 9)
         {
             // Bolt and mirror cards have a value of 1 when initially drawn from the deck
@@ -191,18 +233,37 @@ public class BladeManager : MonoBehaviour
         {
             stack1 += deck1[index];
         }
+
         stack1Text.text = stack1.ToString();
+
+        // Disable the deck UI object if the deck is out of cards
         if (index >= deck1.Length - 1)
         {
             deck1Obj.SetActive(false);
         }
 
-        stack2 += deck2[index];
+        // PC drawing
+        if (deck2[index] == 8 || deck2[index] == 9)
+        {
+            stack2 += 1;
+        }
+        else
+        {
+            stack2 += deck2[index];
+        }
+
         stack2Text.text = stack2.ToString();
+
         if (index >= deck2.Length - 1)
         {
             deck2Obj.SetActive(false);
         }
+
+        // Clear the playOrder lists and add the new starting stack value to them
+        playOrder1.Clear();
+        playOrder2.Clear();
+        playOrder1.Add(stack1);
+        playOrder2.Add(stack2);
 
 
         if (stack1 > stack2)
