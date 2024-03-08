@@ -96,7 +96,19 @@ public class BladeManager : MonoBehaviour
     public void PlayCard(GameObject card)
     {
         int index = card.transform.GetSiblingIndex();
-        stack1 += hand1[index];
+
+        if (hand1[index] == 9)
+        {
+            // Use C# tuple functionality to swap the values of the two stacks
+            (stack1, stack2) = (stack2, stack1);
+            // Make sure to update opponent's stack text since you changed it
+            stack2Text.text = stack2.ToString();
+        }
+        else
+        {
+            stack1 += hand1[index];
+        }
+
         card.SetActive(false);
         stack1Text.text = stack1.ToString();
 
@@ -170,7 +182,15 @@ public class BladeManager : MonoBehaviour
 
     public void Draw(int index)
     {
-        stack1 += deck1[index];
+        if (deck1[index] == 8 || deck1[index] == 9)
+        {
+            // Bolt and mirror cards have a value of 1 when initially drawn from the deck
+            stack1 += 1;
+        }
+        else 
+        {
+            stack1 += deck1[index];
+        }
         stack1Text.text = stack1.ToString();
         if (index >= deck1.Length - 1)
         {
