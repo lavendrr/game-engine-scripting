@@ -5,15 +5,24 @@ using UnityEngine;
 public class CardClick : MonoBehaviour
 {
     private BladeManager blade;
+    private StateController sc;
 
-    public void AssignBladeRef(BladeManager bladeScript)
+    public void AssignRefs(BladeManager bladeScript, StateController stateController)
     {
         blade = bladeScript;
+        sc = stateController;
     }
     
     public void PlayCard()
     {
-        blade.PlayCard(gameObject);
+        if (sc.GetCurrentState() == sc.DrawState)
+        {
+            blade.DrawNoDeck(gameObject);
+        }
+        else
+        {
+            blade.PlayCard(gameObject);
+        }
     }
 
 }

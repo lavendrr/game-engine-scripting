@@ -51,6 +51,11 @@ public class StateController : MonoBehaviour
         }));
     }
 
+    public State GetCurrentState()
+    {
+        return currentState;
+    }
+
     private IEnumerator Delay(float time, System.Action<bool> done)
     {
         yield return new WaitForSeconds(time);
@@ -112,18 +117,40 @@ public class DrawState : State
 {
     public DrawState(BladeManager bladeScript, StateController stateController) : base(bladeScript, stateController){}
 
+    private GameObject deck1, hand1;
+
     public override void OnEnter()
     {
         Debug.Log("Entered Draw state!");
         base.OnEnter();
+        deck1 = GameObject.Find("Deck1");
+        hand1 = GameObject.Find("Hand1");
+
         blade.Redraw();
-        GameObject.Find("Deck1").GetComponent<Button>().interactable = true;
+        
+        if (deck1 != null)
+        {
+            deck1.GetComponent<Button>().interactable = true;
+        }
+        else if (hand1 != null)
+        {
+            hand1.GetComponent<CanvasGroup>().interactable = true;
+        }
     }
 
     public override void OnExit()
     {
         base.OnExit();
-        GameObject.Find("Deck1").GetComponent<Button>().interactable = false;
+
+        if (deck1 != null)
+        {
+            deck1.GetComponent<Button>().interactable = false;
+        }
+        else if (hand1 != null)
+        {
+            hand1.GetComponent<CanvasGroup>().interactable = false;
+        }
+
         Debug.Log("Exited Draw state!");
     }
 

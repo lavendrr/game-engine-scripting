@@ -79,7 +79,7 @@ public class BladeManager : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             GameObject card1 = Instantiate(playerCardPrefab, hand1Obj);
-            card1.GetComponent<CardClick>().AssignBladeRef(this);
+            card1.GetComponent<CardClick>().AssignRefs(this, sc);
             Image img1 = card1.GetComponent<Image>();
             img1.sprite = spriteArray[hand1[i] - 1];
             yield return new WaitForSeconds(0.3f);
@@ -377,6 +377,86 @@ public class BladeManager : MonoBehaviour
         {
             sc.ChangeState(sc.DrawState, 1.5f);
         }
+    }
+
+    public void DrawNoDeck(GameObject playerCard)
+    {
+        // Clear the playOrder lists and add the new starting stack value to them
+        playOrder1.Clear();
+        playOrder2.Clear();
+
+        int index = playerCard.transform.GetSiblingIndex();
+
+        // Player drawing
+        if (hand1[index] == 8 || hand1[index] == 9)
+        {
+            // Bolt and mirror cards have a value of 1 when initially drawn from the deck
+            stack1 += 1;
+        }
+        else 
+        {
+            stack1 += hand1[index];
+        }
+
+        playerCard.SetActive(false);
+        playOrder1.Add(stack1);
+        stack1Text.text = stack1.ToString();
+
+        // PC Drawing
+        GameObject lowestCard = null;
+        int lowestValue = 100;
+        int PCindex = 0;
+
+        // Finds the lowest card in the hand
+        foreach (int card in hand2)
+        {
+            int cardRealValue = card; // Assigns card into a new variable so it can be changed (cannot change foreach iteration variables)
+            GameObject cardObj = hand2Obj.transform.GetChild(PCindex).gameObject;
+
+            if (cardObj.activeSelf)
+            {
+                // Convert blade and mirror cards to a value of 1
+                if (cardRealValue == 8 || cardRealValue == 9)
+                {
+                    cardRealValue = 1;
+                }
+
+                if (cardRealValue < lowestValue)
+                {
+                    lowestValue = cardRealValue;
+                    lowestCard = cardObj;
+                }
+            }
+
+            PCindex++;
+        }
+
+        if (lowestCard != null)
+        {
+            stack2 += lowestValue;
+            playOrder2.Add(stack2);
+            lowestCard.SetActive(false);
+            stack2Text.text = stack2.ToString();
+        }
+        else
+        {
+            sc.ChangeState(sc.GameEndState, 1.5f);
+            Debug.Log("Player 2 lost");
+        }
+
+        if (stack1 > stack2)
+        {
+            sc.ChangeState(sc.PCActionState, 1.5f);
+        }
+        else if (stack2 > stack1)
+        {
+            sc.ChangeState(sc.PlayerActionState, 1.5f);
+        }
+        else if (stack1 == stack2)
+        {
+            sc.ChangeState(sc.DrawState, 1.5f);
+        }
+
     }
 
     public void Redraw()
