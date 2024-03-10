@@ -21,7 +21,6 @@ public class Door : MonoBehaviour
         {
             if (keys > 0)
             {
-                Debug.Log("Opened door");
                 gameObject.GetComponent<BoxCollider2D>().enabled = false;
                 isOpen = true;
                 spriteRenderer.sprite = openSprite;
@@ -29,13 +28,11 @@ public class Door : MonoBehaviour
             }
             else
             {
-                Debug.Log("Failed to open door");
                 return false;
             }
         }
         else
         {
-            Debug.Log("Door is already open");
             return false;
         }
     }

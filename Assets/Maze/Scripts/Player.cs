@@ -36,7 +36,7 @@ public class Player : MonoBehaviour
     {
         if (other.gameObject.name == "Door")
         {
-            if (Input.GetKeyDown("k"))
+            if (Input.GetKey("k")) // Note: this is calling a bunch of times which doesn't currently seem to be affecting performance, but might be worth fixing later
             {
                 if (other.gameObject.GetComponent<Door>().OpenDoor(keys))
                 {
