@@ -11,7 +11,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int health = 10;
     [SerializeField]
-    private TextMeshProUGUI keysText, healthText;
+    private int coins = 0;
+    [SerializeField]
+    private TextMeshProUGUI keysText, healthText, coinsText;
 
     public int GetKeys()
     {
@@ -23,6 +25,13 @@ public class Player : MonoBehaviour
         keys++;
         keysText.text = "Keys: " + keys.ToString();
         Debug.Log("Got a key! Now I have: " + keys.ToString());
+    }
+
+    public void GiveCoin()
+    {
+        coins++;
+        coinsText.text = "Coins: " + coins.ToString();
+        Debug.Log("Got a coin! Now I have: " + coins.ToString());
     }
 
     public void Damage(int amt)
