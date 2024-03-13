@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Spikes : MonoBehaviour
@@ -9,6 +7,10 @@ public class Spikes : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        other.gameObject.GetComponent<Player>().Damage(damageAmount);
+        // When a collision happens, make sure it's with the player, and damage them
+        if (other.gameObject.name == "Player2D")
+        {
+            other.gameObject.GetComponent<Player>().Damage(damageAmount);
+        }
     }
 }

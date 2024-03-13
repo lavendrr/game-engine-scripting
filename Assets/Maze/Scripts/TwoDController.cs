@@ -1,5 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
+// Original script from https://stuartspixelgames.com/2018/06/24/simple-2d-top-down-movement-unity-c/
+// Modified by me to include sprite walk animations
+
 using UnityEngine;
 public class TwoDController : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class TwoDController : MonoBehaviour
     {
         horizontal = Input.GetAxisRaw("Horizontal"); // -1 is left, 1 is right
         vertical = Input.GetAxisRaw("Vertical"); // -1 is down, 1 is up
-        isWalking = (horizontal != 0 || vertical != 0);
+        isWalking = horizontal != 0 || vertical != 0;
 
         // Update the sprite direction based on the direction the player is facing
         if (horizontal > 0)
