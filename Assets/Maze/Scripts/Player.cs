@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -13,7 +11,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int coins = 0;
     [SerializeField]
-    private TextMeshProUGUI keysText, healthText, coinsText;
+    private TextMeshProUGUI keysText, healthText, coinsText, endText;
+    [SerializeField]
+    private GameObject blurVolume, playerUI;
 
     public int GetKeys()
     {
@@ -39,13 +39,34 @@ public class Player : MonoBehaviour
         health -= amt;
         healthText.text = "Health: " + health.ToString();
         Debug.Log("Took " + amt.ToString() + " damage");
+        if (health <= 0)
+        {
+            EndGame(false);
+        }
+    }
+
+    private void EndGame(bool won)
+    {
+        if (won)
+        {
+            endText.text = "You won!\nCoins: " + coins.ToString();
+        }
+        else
+        {
+            endText.text = "You lost!\nCoins: " + coins.ToString();
+        }
+
+        playerUI.SetActive(false);
+        blurVolume.SetActive(true);
+        endText.gameObject.SetActive(true);
+        GetComponent<TwoDController>().enabled = false;
     }
 
     void OnTriggerStay2D(Collider2D other)
     {
         if (other.gameObject.name == "Door")
         {
-            if (Input.GetKey("k")) // Note: this is calling a bunch of times which doesn't currently seem to be affecting performance, but might be worth fixing later
+            if (Input.GetKey("k"))
             {
                 if (other.gameObject.GetComponent<Door>().OpenDoor(keys))
                 {
@@ -54,5 +75,18 @@ public class Player : MonoBehaviour
                 }
             }
         }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.name == "WinVolume")
+        {
+            EndGame(true);
+        }
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene("Maze");
     }
 }
