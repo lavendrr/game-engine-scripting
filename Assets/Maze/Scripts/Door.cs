@@ -3,7 +3,12 @@ using UnityEngine;
 public class Door : MonoBehaviour
 {
     private bool isOpen = false;
-    private readonly Animator animator;
+    private Animator animator;
+
+    public void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     // Returns true if the door successfully opens, returns false if the player doesn't have a key or if the door is already open
     public bool OpenDoor(int keys)

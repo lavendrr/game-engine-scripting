@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    private int keys = 0;
+    private int keys = 1;
     private int health = 10;
     private int coins = 0;
 
@@ -59,8 +59,10 @@ public class Player : MonoBehaviour
         playerUI.SetActive(false);
         blurVolume.SetActive(true);
         endText.gameObject.SetActive(true);
-        // Stop the player from being able to keep moving their character after the game has ended
+        
+        // Stop the player from being able to keep moving their character after the game has ended, and disable its physics as well
         GetComponent<TwoDController>().enabled = false;
+        GetComponent<Rigidbody2D>().simulated = false;
     }
 
     void OnTriggerStay2D(Collider2D other)
