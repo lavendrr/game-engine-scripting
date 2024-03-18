@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
 using TMPro;
+using DG.Tweening;
 using Unity.VisualScripting;
 
 
@@ -35,6 +36,11 @@ public class BladeManager : MonoBehaviour
     [SerializeField]
     private List<int> playOrder1, playOrder2 = new List<int>();
     private int recentBolt = 0;
+
+    //[SerializeField]
+    private List<GameObject> stack1Cards = new List<GameObject>();
+    //[SerializeField]
+    private List<GameObject> stack2Cards = new List<GameObject>();
 
     [SerializeField]
     private int[] hand1;
@@ -87,8 +93,8 @@ public class BladeManager : MonoBehaviour
             // Set all of Player 2's cards to use the card back sprite since they are hidden
             GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
             Image img2 = card2.GetComponent<Image>();
-            //img2.sprite = spriteArray[9];
-            img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
+            img2.sprite = spriteArray[9];
+            //img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
             yield return new WaitForSeconds(0.3f);
         }
 
@@ -124,7 +130,13 @@ public class BladeManager : MonoBehaviour
             (stack1, stack2) = (stack2, stack1);
             (playOrder1, playOrder2) = (playOrder2, playOrder1);
             // Make sure to update opponent's stack text since you changed it
+            stack1Text.text = stack1.ToString();
             stack2Text.text = stack2.ToString();
+
+            AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
+
+            MirrorReparent();
+            
         }
         else if (hand1[index] == 8) // Bolt
         {
@@ -139,17 +151,39 @@ public class BladeManager : MonoBehaviour
             playOrder2.RemoveAt(playOrder2.Count - 1);
             stack2Text.text = stack2.ToString();
             playOrder1.Add(-1);
+            AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
+            Destroy(stack2Cards[stack2Cards.Count - 1]);
+            stack2Cards.RemoveAt(stack2Cards.Count - 1);
         }
         else if (hand1[index] == 1 && opponentBolted) // Using a 1 to undo a Bolt
         {
             stack1 += recentBolt;
             playOrder1.Add(recentBolt);
-            recentBolt = 0;
+
+            AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
+
+            if (stack1Cards.Count == 0)
+            {
+                AnimateDuplicateCard(stack1Cards, stack1Text.transform.position + new Vector3(300f, 0f, 0f), stack1Text.transform, stack1Text.transform.position + new Vector3(300f, 0f, 0f), recentBolt);
+            }
+            else
+            {
+                AnimateDuplicateCard(stack1Cards, stack1Cards[stack1Cards.Count - 1].transform.position + new Vector3(75f, 0f, 0f), stack1Text.transform, stack1Cards[stack1Cards.Count - 1].transform.position + new Vector3(75f, 0f, 0f), recentBolt);
+            }
+
         }
         else
         {
             stack1 += hand1[index];
             playOrder1.Add(hand1[index]);
+            if (stack1Cards.Count == 0)
+            {
+                AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, stack1Text.transform.position + new Vector3(300f, 0f, 0f), hand1[index]);
+            }
+            else
+            {
+                AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, stack1Cards[stack1Cards.Count - 1].transform.position + new Vector3(75f, 0f, 0f), hand1[index]);
+            }
         }
 
         card.SetActive(false);
@@ -168,6 +202,7 @@ public class BladeManager : MonoBehaviour
             sc.ChangeState(sc.GameEndState, 1.5f);
             Debug.Log("Player 1 lost");
         }
+
     }
 
     public void PCPlayCard()
@@ -258,8 +293,17 @@ public class BladeManager : MonoBehaviour
             {
                 stack2 += recentBolt;
                 playOrder2.Add(recentBolt);
-                recentBolt = 0;
+                AnimateDuplicateCard(stack2Cards, oneObj.transform.position, stack2Text.transform, oneObj.transform.position + new Vector3(0f, -100f, 0f), 1, true);
                 oneObj.SetActive(false);
+                if (stack2Cards.Count == 0)
+                {
+                    AnimateDuplicateCard(stack2Cards, stack2Text.transform.position + new Vector3(-300f, 0f, 0f), stack2Text.transform, stack2Text.transform.position + new Vector3(-300f, 0f, 0f), recentBolt);
+                }
+                else
+                {
+                    AnimateDuplicateCard(stack2Cards, stack2Cards[stack2Cards.Count - 1].transform.position + new Vector3(-75f, 0f, 0f), stack2Text.transform, stack2Cards[stack2Cards.Count - 1].transform.position + new Vector3(-75f, 0f, 0f), recentBolt);
+                }
+
             }
             else if (boltObj != null && tryBolt == true)
             {
@@ -268,40 +312,63 @@ public class BladeManager : MonoBehaviour
                 playOrder1.RemoveAt(playOrder1.Count - 1);
                 stack1Text.text = stack1.ToString();
                 playOrder2.Add(-1);
+                AnimateDuplicateCard(stack2Cards, boltObj.transform.position, stack2Text.transform, boltObj.transform.position + new Vector3(0f, -100f, 0f), 8, true);
                 boltObj.SetActive(false);
+                Destroy(stack1Cards[stack1Cards.Count - 1]);
+                stack1Cards.RemoveAt(stack1Cards.Count - 1);
             }
             else if (mirrorObj != null && tryMirror == true)
             {
                 (stack1, stack2) = (stack2, stack1);
                 (playOrder1, playOrder2) = (playOrder2, playOrder1);
                 stack1Text.text = stack1.ToString();
+                AnimateDuplicateCard(stack2Cards, mirrorObj.transform.position, stack2Text.transform, mirrorObj.transform.position + new Vector3(0f, -100f, 0f), 9, true);
                 mirrorObj.SetActive(false);
+                MirrorReparent();
             }
             else if ((numActiveNumberCards == 1 && hand2Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 > 1) || nearestObj == null)
             {
                 if (boltObj != null)
                 {
-                    Debug.Log("Bolting this: " + playOrder1[playOrder1.Count - 1].ToString());
+                    recentBolt = playOrder1[playOrder1.Count - 1];
                     stack1 -= playOrder1[playOrder1.Count - 1];
                     playOrder1.RemoveAt(playOrder1.Count - 1);
                     stack1Text.text = stack1.ToString();
+                    playOrder2.Add(-1);
+                    AnimateDuplicateCard(stack2Cards, boltObj.transform.position, stack2Text.transform, boltObj.transform.position + new Vector3(0f, -100f, 0f), 8, true);
                     boltObj.SetActive(false);
+                    Destroy(stack1Cards[stack1Cards.Count - 1]);
+                    stack1Cards.RemoveAt(stack1Cards.Count - 1);
                 }
                 else if (mirrorObj != null)
                 {
                     (stack1, stack2) = (stack2, stack1);
                     (playOrder1, playOrder2) = (playOrder2, playOrder1);
                     stack1Text.text = stack1.ToString();
+                    AnimateDuplicateCard(stack2Cards, mirrorObj.transform.position, stack2Text.transform, mirrorObj.transform.position + new Vector3(0f, -100f, 0f), 9, true);
                     mirrorObj.SetActive(false);
+                    MirrorReparent();
                 }
             }
             else
             {
                 stack2 += hand2[nearestObj.transform.GetSiblingIndex()];
                 playOrder2.Add(hand2[nearestObj.transform.GetSiblingIndex()]);
+
+                if (stack2Cards.Count == 0)
+                {
+                    AnimateDuplicateCard(stack2Cards, nearestObj.transform.position, stack2Text.transform, stack2Text.transform.position + new Vector3(-300f, 0f, 0f), hand2[nearestObj.transform.GetSiblingIndex()]);
+                }
+                else
+                {
+                    AnimateDuplicateCard(stack2Cards, nearestObj.transform.position, stack2Text.transform, stack2Cards[stack2Cards.Count - 1].transform.position + new Vector3(-75f, 0f, 0f), hand2[nearestObj.transform.GetSiblingIndex()]);
+                }
+
                 nearestObj.SetActive(false);
+
             }
 
+            stack1Text.text = stack1.ToString();
             stack2Text.text = stack2.ToString();
 
             if (stack2 == stack1)
@@ -322,10 +389,6 @@ public class BladeManager : MonoBehaviour
 
     public void Draw(int index)
     {
-        // Clear the playOrder lists and add the new starting stack value to them
-        playOrder1.Clear();
-        playOrder2.Clear();
-
         // Player drawing
         if (deck1[index] == 8 || deck1[index] == 9)
         {
@@ -337,6 +400,7 @@ public class BladeManager : MonoBehaviour
             stack1 += deck1[index];
         }
 
+        AnimateDuplicateCard(stack1Cards, deck1Obj.transform.position, stack1Text.transform, stack1Text.transform.position + new Vector3(300f, 0f, 0f), deck1[index]);
         stack1Text.text = stack1.ToString();
 
         // Disable the deck UI object if the deck is out of cards
@@ -355,6 +419,7 @@ public class BladeManager : MonoBehaviour
             stack2 += deck2[index];
         }
 
+        AnimateDuplicateCard(stack2Cards, deck2Obj.transform.position, stack2Text.transform, stack2Text.transform.position + new Vector3(-300f, 0f, 0f), deck2[index]);
         stack2Text.text = stack2.ToString();
 
         if (index >= deck2.Length - 1)
@@ -381,10 +446,6 @@ public class BladeManager : MonoBehaviour
 
     public void DrawNoDeck(GameObject playerCard)
     {
-        // Clear the playOrder lists and add the new starting stack value to them
-        playOrder1.Clear();
-        playOrder2.Clear();
-
         int index = playerCard.transform.GetSiblingIndex();
 
         // Player drawing
@@ -465,6 +526,74 @@ public class BladeManager : MonoBehaviour
         stack2 = 0;
         stack1Text.text = "";
         stack2Text.text = "";
+        playOrder1.Clear();
+        playOrder2.Clear();
+        stack1Cards.Clear();
+        stack2Cards.Clear();
+        foreach (Transform child in stack1Text.gameObject.GetComponentsInChildren<Transform>())
+        {
+            if (child.gameObject.name != "Stack1Text")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        foreach (Transform child in stack2Text.gameObject.GetComponentsInChildren<Transform>())
+        {
+            if (child.gameObject.name != "Stack2Text")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
+    public void AnimateDuplicateCard(List<GameObject> cardList, Vector3 startingPosition, Transform parentTransform, Vector3 endingPosition, int cardValue, bool destroy = false)
+    {
+        GameObject playedCard = Instantiate(playerCardPrefab, parentTransform);
+        playedCard.transform.position = startingPosition;
+        playedCard.GetComponent<Button>().enabled = false;
+        playedCard.GetComponent<Image>().sprite = spriteArray[cardValue - 1];
+
+        playedCard.transform.DOMove(endingPosition, 1f).OnComplete(() =>
+        {
+            if (destroy)
+            {
+                Destroy(playedCard);
+            }
+            else
+            {
+                cardList.Add(playedCard);
+            }
+        });
+    }
+
+    public void MirrorReparent()
+    {
+        foreach (GameObject child in stack1Cards)
+        {
+            if (child != null){
+                if (child.name != "Stack1Text")
+                {
+                    child.transform.SetParent(stack2Text.transform, true);
+                    child.transform.DOMove(new Vector3(stack2Text.transform.position.x - child.transform.localPosition.x, stack2Text.transform.position.y, stack2Text.transform.position.z), 1f).OnComplete(() =>
+                    {
+                    });
+                }
+            }
+        }
+        foreach (GameObject child in stack2Cards)
+        {
+            if (child != null){
+                if (child.name != "Stack2Text")
+                {
+                    child.transform.SetParent(stack1Text.transform, true);
+                    child.transform.DOMove(new Vector3(stack1Text.transform.position.x - child.transform.localPosition.x, stack1Text.transform.position.y, stack1Text.transform.position.z), 1f).OnComplete(() =>
+                    {
+                    });
+                }
+            }
+        }
+
+        (stack1Cards, stack2Cards) = (stack2Cards, stack1Cards);
     }
 
     public void CheckPlayerCardsLeft()
