@@ -21,6 +21,7 @@ public class StateController : MonoBehaviour
 
     private void Start()
     {
+        // Assign references and initialize states
         bladeScript = gameObject.GetComponent<BladeManager>();
 
         DealState = new DealState(bladeScript, this);
@@ -29,6 +30,7 @@ public class StateController : MonoBehaviour
         PCActionState = new PCActionState(bladeScript, this);
         GameEndState = new GameEndState(bladeScript, this, endDialog);
 
+        // Enter the deal state upon game start
         ChangeState(DealState, 0f);
     }
 
@@ -42,11 +44,13 @@ public class StateController : MonoBehaviour
 
     public void ChangeState(State newState, float delayTime)
     {
+        // Exit the current state
         if (currentState != null)
         {
             currentState.OnExit();
         }
 
+        // Enter the new state after the delay is complete
         StartCoroutine(Delay(delayTime, done => {
             currentState = newState;
             currentState.OnEnter();
@@ -58,6 +62,7 @@ public class StateController : MonoBehaviour
         return currentState;
     }
 
+    // Function to add a delay to any action, used when changing states
     private IEnumerator Delay(float time, System.Action<bool> done)
     {
         yield return new WaitForSeconds(time);
@@ -98,11 +103,10 @@ public class DealState : State
 
     public override void OnEnter()
     {
-        Debug.Log("Entering Deal State");
+        // Assign and create player cards, entering the draw state after completion
         base.OnEnter();
         blade.AssignCards();
         blade.StartCoroutine(blade.CreateCards(done => {
-            Debug.Log("Changing state after coroutine");
             sc.ChangeState(sc.DrawState, 0f);
         }));
     }
@@ -110,7 +114,6 @@ public class DealState : State
     public override void OnExit()
     {
         base.OnExit();
-        Debug.Log("Exiting deal state!");
     }
 
 }
@@ -123,17 +126,18 @@ public class DrawState : State
 
     public override void OnEnter()
     {
-        Debug.Log("Entered Draw state!");
         base.OnEnter();
         deck1 = GameObject.Find("Deck1");
         hand1 = GameObject.Find("Hand1");
 
+        // Reset the game field
         blade.Redraw();
-        
+        // Enable the deck if it still has cards
         if (deck1 != null)
         {
             deck1.GetComponent<Button>().interactable = true;
         }
+        // Enable the hand if the deck is out of cards
         else if (hand1 != null)
         {
             hand1.GetComponent<CanvasGroup>().interactable = true;
@@ -144,6 +148,7 @@ public class DrawState : State
     {
         base.OnExit();
 
+        // Disable the deck or hand depending on what was active
         if (deck1 != null)
         {
             deck1.GetComponent<Button>().interactable = false;
@@ -153,7 +158,6 @@ public class DrawState : State
             hand1.GetComponent<CanvasGroup>().interactable = false;
         }
 
-        Debug.Log("Exited Draw state!");
     }
 
 }
@@ -164,7 +168,7 @@ public class PlayerActionState : State
 
     public override void OnEnter()
     {
-        Debug.Log("Entering Player Action State!");
+        // Check if the player has cards left to play, and enable their hand
         base.OnEnter();
 
         blade.CheckPlayerCardsLeft();
@@ -174,7 +178,7 @@ public class PlayerActionState : State
 
     public override void OnExit()
     {
-        Debug.Log("Exiting Player Action State!");
+        // Disable the player's hand
         base.OnExit();
         GameObject.Find("Hand1").GetComponent<CanvasGroup>().interactable = false;
     }
@@ -187,14 +191,13 @@ public class PCActionState : State
 
     public override void OnEnter()
     {
-        Debug.Log("Entering PC Action State!");
+        // Make the PC play a card
         base.OnEnter();
         blade.PCPlayCard();
     }
 
     public override void OnExit()
     {
-        Debug.Log("Exiting PC Action State!");
         base.OnExit();
     }
 
@@ -207,8 +210,9 @@ public class GameEndState : State
     public override void OnEnter()
     {
         base.OnEnter();
-        Debug.Log("Entered game end state!");
+        // Enable the game end dialog
         endDialog.SetActive(true);
+        // Assign the end text and box color according to if the player won or lost
         if (blade.GetWinState())
         {
             endDialog.GetComponent<Image>().color = new Color(0.525f, 0.952f, 0.498f, 0.5f);

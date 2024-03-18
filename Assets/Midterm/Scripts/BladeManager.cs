@@ -4,68 +4,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = System.Random;
+using Random = System.Random; // Using Random from System instead of Unity's Random
 using TMPro;
-using DG.Tweening;
+using DG.Tweening; // Using DoTween for animations
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 
-
 public class BladeManager : MonoBehaviour
 {
-    StateController sc;
+    StateController sc; // Reference to StateController
 
+    // Array representing the total deck of cards
     private int[] totalDeck = { 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9 };
 
-    public Sprite[] spriteArray;
+    private Sprite[] spriteArray; // Array to hold card sprites
 
-    [SerializeField]
-    GameObject playerCardPrefab;
+    // Serialized fields for various game objects and UI elements
+    [SerializeField] GameObject playerCardPrefab;
+    [SerializeField] Transform hand1Obj, hand2Obj;
+    [SerializeField] GameObject deck1Obj, deck2Obj;
+    [SerializeField] TextMeshProUGUI stack1Text, stack2Text;
 
-    [SerializeField]
-    Transform hand1Obj, hand2Obj;
-
-    [SerializeField]
-    GameObject deck1Obj, deck2Obj;
-
-    [SerializeField]
-    public TextMeshProUGUI stack1Text, stack2Text;
-
+    // Variables to track stack values and card play orders
     private int stack1 = 0;
     private int stack2 = 0;
-
-    [SerializeField]
-    private List<int> playOrder1, playOrder2 = new List<int>();
+    private List<int> playOrder1 = new List<int>();
+    private List<int>playOrder2 = new List<int>();
     private int recentBolt = 0;
 
-    //[SerializeField]
+    // Lists to hold cards in stacks
     private List<GameObject> stack1Cards = new List<GameObject>();
-    //[SerializeField]
     private List<GameObject> stack2Cards = new List<GameObject>();
 
-    [SerializeField]
+    // Arrays to represent player hands and decks
     private int[] hand1;
-    [SerializeField]
     private int[] deck1;
-    [SerializeField]
     private int[] hand2;
-    [SerializeField]
     private int[] deck2;
 
-    private bool gameWon;
+    private bool gameWon; // Flag to track game state
 
     void Start()
     {
+        // Load card sprites from resources
         spriteArray = Resources.LoadAll<Sprite>("Card Sprites");
 
+        // Get reference to StateController
         sc = gameObject.GetComponent<StateController>();
     }
 
+    // Method to assign cards to players
     public void AssignCards()
     {
+        // Shuffle the total deck
         Random rng = new Random();
         int[] randomDeck = totalDeck.OrderBy(x => rng.Next()).ToArray();
 
+        // Assign cards to player hands and decks
         deck1 = new int[6];
         deck2 = new int[6];
         hand1 = new int[10];
@@ -73,18 +68,17 @@ public class BladeManager : MonoBehaviour
 
         Array.Copy(randomDeck, 0, hand1, 0, 10);
         Array.Copy(randomDeck, 10, deck1, 0, 6);
-
         Array.Copy(randomDeck, 16, hand2, 0, 10);
         Array.Copy(randomDeck, 26, deck2, 0, 6);
 
         Array.Sort(hand1);
         Array.Sort(hand2);
-
     }
 
+    // Coroutine to create cards for players
     public IEnumerator CreateCards(System.Action<bool> done)
     {
-        // Instantiate 10 cards and assign their sprites based on their corresponding values from the hand array
+        // Instantiate 10 cards and assign their sprites based on their corresponding values from the hand array for player 1, and hide all the sprites for player 2
         for (int i = 0; i < 10; i++)
         {
             GameObject card1 = Instantiate(playerCardPrefab, hand1Obj);
@@ -93,80 +87,91 @@ public class BladeManager : MonoBehaviour
             img1.sprite = spriteArray[hand1[i] - 1];
             yield return new WaitForSeconds(0.3f);
 
-            // Set all of Player 2's cards to use the card back sprite since they are hidden
             GameObject card2 = Instantiate(playerCardPrefab, hand2Obj);
             Image img2 = card2.GetComponent<Image>();
-            img2.sprite = spriteArray[9];
-            //img2.sprite = spriteArray[hand2[i] - 1]; // Use for testing what card the opponent plays
+            img2.sprite = spriteArray[9]; // Card back sprite for player 2
             yield return new WaitForSeconds(0.3f);
         }
 
+        // Activate deck objects
         deck1Obj.SetActive(true);
         deck2Obj.SetActive(true);
 
         done(true);
     }
 
+    // Method to handle player card play
     public void PlayCard(GameObject card)
     {
+        // Index of played card in player's hand
         int index = card.transform.GetSiblingIndex();
 
-        bool oneCardLeft = hand1Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 == 1;
+        // Check if player has only one card left
+        bool oneCardLeft = hand1Obj.GetComponentsInChildren<Transform>().Length - 1 == 1;
 
+        // Flag to check if opponent has played a Bolt card
         bool opponentBolted = false;
 
+        // Check if opponent played Bolt card
         if (playOrder2[playOrder2.Count - 1] == -1)
         {
             opponentBolted = true;
             playOrder2.Remove(-1);
         }
 
-        if (hand1[index] == 9) // Mirror
+        // Handle Mirror card play
+        if (hand1[index] == 9)
         {
             if (oneCardLeft == true)
             {
                 gameWon = false;
                 sc.ChangeState(sc.GameEndState, 0f);
-                Debug.Log("Player 1 lost due to playing a mirror card as their last card");
                 return;
             }
-            // Use C# tuple functionality to swap the values of the two stacks and play orders
+            // Swap stack values and play orders
             (stack1, stack2) = (stack2, stack1);
             (playOrder1, playOrder2) = (playOrder2, playOrder1);
-            // Make sure to update opponent's stack text since you changed it
             stack1Text.text = stack1.ToString();
             stack2Text.text = stack2.ToString();
 
+            // Animate mirror card usage
             AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
-
             MirrorReparent();
-            
         }
-        else if (hand1[index] == 8) // Bolt
+        // Handle Bolt card play
+        else if (hand1[index] == 8)
         {
             if (oneCardLeft == true)
             {
                 gameWon = false;
                 sc.ChangeState(sc.GameEndState, 0f);
-                Debug.Log("Player 1 lost due to playing a bolt card as their last card");
                 return;
             }
+            // Stores opponent's most recent card value in recentBolt, and removes it from their stack, then add a placeholder -1 value to the play order to indicate that a bolt was just played
             recentBolt = playOrder2[playOrder2.Count - 1];
             stack2 -= playOrder2[playOrder2.Count - 1];
             playOrder2.RemoveAt(playOrder2.Count - 1);
             stack2Text.text = stack2.ToString();
             playOrder1.Add(-1);
+
+            // Animate bolt card usage
             AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
+
+            // Destroy the corresponding card object and remove it from their object play order
             Destroy(stack2Cards[stack2Cards.Count - 1]);
             stack2Cards.RemoveAt(stack2Cards.Count - 1);
         }
-        else if (hand1[index] == 1 && opponentBolted) // Using a 1 to undo a Bolt
+        // Handle usage of a 1 card to undo a bolt
+        else if (hand1[index] == 1 && opponentBolted)
         {
+            // Add the recentBolt value back to the stack and play order
             stack1 += recentBolt;
             playOrder1.Add(recentBolt);
-
+            
+            // Animate the 1 card being used but not added to the stack
             AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, card.transform.position + new Vector3(0f, 100f, 0f), hand1[index], true);
 
+            // Set the initial offset if there are no cards in the stack, or offset the card according to the previous card in the stack
             if (stack1Cards.Count == 0)
             {
                 AnimateDuplicateCard(stack1Cards, stack1Text.transform.position + new Vector3(300f, 0f, 0f), stack1Text.transform, stack1Text.transform.position + new Vector3(300f, 0f, 0f), recentBolt);
@@ -175,12 +180,15 @@ public class BladeManager : MonoBehaviour
             {
                 AnimateDuplicateCard(stack1Cards, stack1Cards[stack1Cards.Count - 1].transform.position + new Vector3(75f, 0f, 0f), stack1Text.transform, stack1Cards[stack1Cards.Count - 1].transform.position + new Vector3(75f, 0f, 0f), recentBolt);
             }
-
         }
+        // Handle normal number card play
         else
         {
+            // Add the card's value to the stack and play order
             stack1 += hand1[index];
             playOrder1.Add(hand1[index]);
+
+            // Set the initial offset if there are no cards in the stack, or offset the card according to the previous card in the stack
             if (stack1Cards.Count == 0)
             {
                 AnimateDuplicateCard(stack1Cards, card.transform.position, stack1Text.transform, stack1Text.transform.position + new Vector3(300f, 0f, 0f), hand1[index]);
@@ -191,9 +199,11 @@ public class BladeManager : MonoBehaviour
             }
         }
 
+        // Deactivate played card and update text
         card.SetActive(false);
         stack1Text.text = stack1.ToString();
 
+        // Determine game state based on stack values
         if (stack1 > stack2)
         {
             sc.ChangeState(sc.PCActionState, 1.5f);
@@ -206,13 +216,13 @@ public class BladeManager : MonoBehaviour
         {
             gameWon = false;
             sc.ChangeState(sc.GameEndState, 1.5f);
-            Debug.Log("Player 1 lost");
         }
-
     }
 
+    // Method for PC to play a card
     public void PCPlayCard()
     {
+        // Initialize values for PC algorithm
         int stackDifference = stack1 - stack2;
         int index = 0;
         int nearestDifference = 100;
@@ -225,6 +235,7 @@ public class BladeManager : MonoBehaviour
         bool tryUndoBolt = false;
         int numActiveNumberCards = 0;
 
+        // Remove Bolt card from own play order if present
         if (playOrder2.Count != 0)
         {
             if (playOrder2[playOrder2.Count - 1] == -1)
@@ -233,16 +244,19 @@ public class BladeManager : MonoBehaviour
             }
         }
 
+        // Check if Bolt card should be played
         if (playOrder1[playOrder1.Count - 1] > 4)
         {
             tryBolt = true;
         }
-        
+
+        // Check if Mirror card should be played
         if (stackDifference > 2)
         {
             tryMirror = true;
         }
 
+        // Check if a one should be used to undo a bolt card
         if (playOrder1[playOrder1.Count - 1] == -1)
         {
             tryUndoBolt = true;
@@ -252,8 +266,10 @@ public class BladeManager : MonoBehaviour
         // Algorithm to find the card that surpasses the opponent's total by the smallest amount, or selects a card that equals the opponent's total if there is nothing to surpass the opponent
         foreach (int card in hand2)
         {
+            // Find the index of the current card
             GameObject cardObj = hand2Obj.transform.GetChild(index).gameObject;
 
+            // Checks that the card hasn't been played already
             if (cardObj.activeSelf)
             {
                 // Don't include bolt and mirror cards in the value checks
@@ -263,26 +279,30 @@ public class BladeManager : MonoBehaviour
 
                     if (card > stackDifference)
                     {
+                        // If the card results in a lower stack difference, set that difference as the new nearest difference and store the card object
                         if (card - stackDifference < nearestDifference)
                         {
                             nearestDifference = card - stackDifference;
                             nearestObj = cardObj;
                         }
                     }
+                    // If there isn't a winning card that has been found yet and the current card would cause a redraw, store the current card
                     else if (card == stackDifference && nearestObj == null)
                     {
                         nearestObj = cardObj;
                     }
-
+                    // Store a one card if it is found
                     if (card == 1 && oneObj == null)
                     {
                         oneObj = cardObj;
                     }
                 }
+                // Store a bolt card if it is found
                 else if (card == 8 && boltObj == null)
                 {
                     boltObj = cardObj;
                 }
+                // Store a mirror card if it is found
                 else if (card == 9 && mirrorObj == null)
                 {
                     mirrorObj = cardObj;
@@ -292,10 +312,10 @@ public class BladeManager : MonoBehaviour
             index++;
         }
 
-
+        // Follow algorithm logic to play appropriate card based on the situation (see PlayCard() above for details on the implementation for the different types of cards, it's the same as here)
         if (nearestObj != null || boltObj != null || mirrorObj != null)
         {
-            if (oneObj != null && tryUndoBolt == true)
+            if (oneObj != null && tryUndoBolt == true) // Try to use a one card to undo a bolt
             {
                 stack2 += recentBolt;
                 playOrder2.Add(recentBolt);
@@ -309,9 +329,8 @@ public class BladeManager : MonoBehaviour
                 {
                     AnimateDuplicateCard(stack2Cards, stack2Cards[stack2Cards.Count - 1].transform.position + new Vector3(-75f, 0f, 0f), stack2Text.transform, stack2Cards[stack2Cards.Count - 1].transform.position + new Vector3(-75f, 0f, 0f), recentBolt);
                 }
-
             }
-            else if (boltObj != null && tryBolt == true)
+            else if (boltObj != null && tryBolt == true) // Bolt the opponent
             {
                 recentBolt = playOrder1[playOrder1.Count - 1];
                 stack1 -= playOrder1[playOrder1.Count - 1];
@@ -323,7 +342,7 @@ public class BladeManager : MonoBehaviour
                 Destroy(stack1Cards[stack1Cards.Count - 1]);
                 stack1Cards.RemoveAt(stack1Cards.Count - 1);
             }
-            else if (mirrorObj != null && tryMirror == true)
+            else if (mirrorObj != null && tryMirror == true) // Mirror the opponent
             {
                 (stack1, stack2) = (stack2, stack1);
                 (playOrder1, playOrder2) = (playOrder2, playOrder1);
@@ -332,9 +351,9 @@ public class BladeManager : MonoBehaviour
                 mirrorObj.SetActive(false);
                 MirrorReparent();
             }
-            else if ((numActiveNumberCards == 1 && hand2Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 > 1) || nearestObj == null)
+            else if ((numActiveNumberCards == 1 && hand2Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 > 1) || nearestObj == null) // If there is only one non-number card left, or if no non-losing number cards were found, play a bolt or mirror to avoid losing
             {
-                if (boltObj != null)
+                if (boltObj != null) // Bolt the opponent
                 {
                     recentBolt = playOrder1[playOrder1.Count - 1];
                     stack1 -= playOrder1[playOrder1.Count - 1];
@@ -346,7 +365,7 @@ public class BladeManager : MonoBehaviour
                     Destroy(stack1Cards[stack1Cards.Count - 1]);
                     stack1Cards.RemoveAt(stack1Cards.Count - 1);
                 }
-                else if (mirrorObj != null)
+                else if (mirrorObj != null) // Mirror the opponent
                 {
                     (stack1, stack2) = (stack2, stack1);
                     (playOrder1, playOrder2) = (playOrder2, playOrder1);
@@ -356,6 +375,7 @@ public class BladeManager : MonoBehaviour
                     MirrorReparent();
                 }
             }
+            // Play a number card normally
             else
             {
                 stack2 += hand2[nearestObj.transform.GetSiblingIndex()];
@@ -371,7 +391,6 @@ public class BladeManager : MonoBehaviour
                 }
 
                 nearestObj.SetActive(false);
-
             }
 
             stack1Text.text = stack1.ToString();
@@ -386,14 +405,15 @@ public class BladeManager : MonoBehaviour
                 sc.ChangeState(sc.PlayerActionState, 1.5f);
             }
         }
+        // Player 1 wins if no suitable card to play can be found
         else
         {
             gameWon = true;
             sc.ChangeState(sc.GameEndState, 1.5f);
-            Debug.Log("Player 2 lost");
         }
     }
 
+    // Method for drawing cards
     public void Draw(int index)
     {
         // Player drawing
@@ -429,6 +449,7 @@ public class BladeManager : MonoBehaviour
         AnimateDuplicateCard(stack2Cards, deck2Obj.transform.position, stack2Text.transform, stack2Text.transform.position + new Vector3(-300f, 0f, 0f), deck2[index]);
         stack2Text.text = stack2.ToString();
 
+        // Disable the deck UI object if the deck is out of cards
         if (index >= deck2.Length - 1)
         {
             deck2Obj.SetActive(false);
@@ -437,6 +458,7 @@ public class BladeManager : MonoBehaviour
         playOrder1.Add(stack1);
         playOrder2.Add(stack2);
 
+        // Trigger next game state based on results of the draw
         if (stack1 > stack2)
         {
             sc.ChangeState(sc.PCActionState, 1.5f);
@@ -451,6 +473,7 @@ public class BladeManager : MonoBehaviour
         }
     }
 
+    // Method for drawing a card when the deck is empty
     public void DrawNoDeck(GameObject playerCard)
     {
         int index = playerCard.transform.GetSiblingIndex();
@@ -475,12 +498,13 @@ public class BladeManager : MonoBehaviour
         int lowestValue = 100;
         int PCindex = 0;
 
-        // Finds the lowest card in the hand
+        // Find the lowest card in the PC's hand and play that to start
         foreach (int card in hand2)
         {
             int cardRealValue = card; // Assigns card into a new variable so it can be changed (cannot change foreach iteration variables)
             GameObject cardObj = hand2Obj.transform.GetChild(PCindex).gameObject;
-
+            
+            // Only looks at active cards
             if (cardObj.activeSelf)
             {
                 // Convert blade and mirror cards to a value of 1
@@ -499,6 +523,7 @@ public class BladeManager : MonoBehaviour
             PCindex++;
         }
 
+        // Play the selected card, or player 1 wins if PC has no valid card left
         if (lowestCard != null)
         {
             stack2 += lowestValue;
@@ -510,7 +535,6 @@ public class BladeManager : MonoBehaviour
         {
             gameWon = true;
             sc.ChangeState(sc.GameEndState, 1.5f);
-            Debug.Log("Player 2 lost");
         }
 
         if (stack1 > stack2)
@@ -525,9 +549,9 @@ public class BladeManager : MonoBehaviour
         {
             sc.ChangeState(sc.DrawState, 1.5f);
         }
-
     }
 
+    // Method to reset game state upon drawing new cards
     public void Redraw()
     {
         stack1 = 0;
@@ -538,6 +562,7 @@ public class BladeManager : MonoBehaviour
         playOrder2.Clear();
         stack1Cards.Clear();
         stack2Cards.Clear();
+        // Clears the played card objects from the field
         foreach (Transform child in stack1Text.gameObject.GetComponentsInChildren<Transform>())
         {
             if (child.gameObject.name != "Stack1Text")
@@ -554,8 +579,10 @@ public class BladeManager : MonoBehaviour
         }
     }
 
+    // Method to help create a new card and animate it
     public void AnimateDuplicateCard(List<GameObject> cardList, Vector3 startingPosition, Transform parentTransform, Vector3 endingPosition, int cardValue, bool destroy = false)
     {
+        // Instantiate a new card at the starting position, disable its button component, and assign its sprite
         GameObject playedCard = Instantiate(playerCardPrefab, parentTransform);
         playedCard.transform.position = startingPosition;
         playedCard.GetComponent<Button>().enabled = false;
@@ -563,6 +590,7 @@ public class BladeManager : MonoBehaviour
 
         playedCard.transform.DOMove(endingPosition, 1f).OnComplete(() =>
         {
+            // Destroy the card in case we don't want to add it to the stack (used for bolt/mirror/undoing bolt)
             if (destroy)
             {
                 Destroy(playedCard);
@@ -574,8 +602,10 @@ public class BladeManager : MonoBehaviour
         });
     }
 
+    // Method to handle Mirror card reparenting and animating of stack swapping
     public void MirrorReparent()
     {
+        // Reparents and animates each played card
         foreach (GameObject child in stack1Cards)
         {
             if (child != null){
@@ -600,7 +630,7 @@ public class BladeManager : MonoBehaviour
                 }
             }
         }
-
+        // Swap the values of the played card stacks
         (stack1Cards, stack2Cards) = (stack2Cards, stack1Cards);
     }
 
@@ -611,7 +641,6 @@ public class BladeManager : MonoBehaviour
         {
             gameWon = false;
             sc.ChangeState(sc.GameEndState, 0f);
-            Debug.Log("Player 1 lost");
         }
     }
 

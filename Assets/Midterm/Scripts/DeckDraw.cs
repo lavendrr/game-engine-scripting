@@ -11,7 +11,7 @@ public class DeckDraw : MonoBehaviour
 
     public void Draw()
     {
-        //StartCoroutine(blade.Draw(count));
+        // Draw the next card in the decks, and increment the count for the next draw
         blade.Draw(count);
         count += 1;
     }
