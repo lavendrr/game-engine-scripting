@@ -8,6 +8,7 @@ using Random = System.Random;
 using TMPro;
 using DG.Tweening;
 using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 
 public class BladeManager : MonoBehaviour
@@ -50,6 +51,8 @@ public class BladeManager : MonoBehaviour
     private int[] hand2;
     [SerializeField]
     private int[] deck2;
+
+    private bool gameWon;
 
     void Start()
     {
@@ -122,6 +125,7 @@ public class BladeManager : MonoBehaviour
         {
             if (oneCardLeft == true)
             {
+                gameWon = false;
                 sc.ChangeState(sc.GameEndState, 0f);
                 Debug.Log("Player 1 lost due to playing a mirror card as their last card");
                 return;
@@ -142,6 +146,7 @@ public class BladeManager : MonoBehaviour
         {
             if (oneCardLeft == true)
             {
+                gameWon = false;
                 sc.ChangeState(sc.GameEndState, 0f);
                 Debug.Log("Player 1 lost due to playing a bolt card as their last card");
                 return;
@@ -199,6 +204,7 @@ public class BladeManager : MonoBehaviour
         }
         else if (stack1 < stack2)
         {
+            gameWon = false;
             sc.ChangeState(sc.GameEndState, 1.5f);
             Debug.Log("Player 1 lost");
         }
@@ -382,6 +388,7 @@ public class BladeManager : MonoBehaviour
         }
         else
         {
+            gameWon = true;
             sc.ChangeState(sc.GameEndState, 1.5f);
             Debug.Log("Player 2 lost");
         }
@@ -501,6 +508,7 @@ public class BladeManager : MonoBehaviour
         }
         else
         {
+            gameWon = true;
             sc.ChangeState(sc.GameEndState, 1.5f);
             Debug.Log("Player 2 lost");
         }
@@ -601,9 +609,20 @@ public class BladeManager : MonoBehaviour
         // Check if the player has 0 active children left (subtract 1 to discount the parent's transform) and trigger a loss if true
         if (hand1Obj.GetComponentsInChildren<Transform>().GetLength(0) - 1 == 0)
         {
+            gameWon = false;
             sc.ChangeState(sc.GameEndState, 0f);
             Debug.Log("Player 1 lost");
         }
     }
 
+    public bool GetWinState()
+    {
+        return gameWon;
+    }
+
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene("Blade");
+    }
 }

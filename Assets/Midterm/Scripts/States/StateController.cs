@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class StateController : MonoBehaviour
 {
@@ -15,7 +16,8 @@ public class StateController : MonoBehaviour
     public PlayerActionState PlayerActionState;
     public PCActionState PCActionState;
     public GameEndState GameEndState;
-
+    [SerializeField]
+    GameObject endDialog;
 
     private void Start()
     {
@@ -25,7 +27,7 @@ public class StateController : MonoBehaviour
         DrawState = new DrawState(bladeScript, this);
         PlayerActionState = new PlayerActionState(bladeScript, this);
         PCActionState = new PCActionState(bladeScript, this);
-        GameEndState = new GameEndState(bladeScript, this);
+        GameEndState = new GameEndState(bladeScript, this, endDialog);
 
         ChangeState(DealState, 0f);
     }
@@ -200,12 +202,26 @@ public class PCActionState : State
 
 public class GameEndState : State
 {
-    public GameEndState(BladeManager bladeScript, StateController stateController) : base(bladeScript, stateController){}
-
+    internal GameObject endDialog;
+    public GameEndState(BladeManager bladeScript, StateController stateController, GameObject endDialog) : base(bladeScript, stateController){this.endDialog = endDialog;}
     public override void OnEnter()
     {
         base.OnEnter();
         Debug.Log("Entered game end state!");
+        endDialog.SetActive(true);
+        if (blade.GetWinState())
+        {
+            endDialog.GetComponent<Image>().color = new Color(0.525f, 0.952f, 0.498f, 0.5f);
+            TextMeshProUGUI endText = GameObject.Find("EndText").GetComponent<TextMeshProUGUI>();
+            endText.text = "Game won!";
+        }
+        else
+        {
+            endDialog.GetComponent<Image>().color = new Color(0.898f, 0.333f, 0.267f, 0.5f);
+            TextMeshProUGUI endText = GameObject.Find("EndText").GetComponent<TextMeshProUGUI>();
+            endText.text = "Game lost!";
+        }
+
     }
 
 }
