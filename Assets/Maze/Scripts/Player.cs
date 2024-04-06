@@ -1,17 +1,27 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    private int keys = 1;
+    public delegate void Restart();
+    public static event Restart GameRestart;
+
+    private int keys = 0;
     private int health = 10;
     private int coins = 0;
+
+    private Vector3 initialPosition;
 
     [SerializeField]
     private TextMeshProUGUI keysText, healthText, coinsText, endText;
     [SerializeField]
     private GameObject blurVolume, playerUI;
+
+    void Start()
+    {
+        // Store the initial position for when the game restarts
+        initialPosition = gameObject.transform.position;
+    }
 
     public int GetKeys()
     {
@@ -94,6 +104,29 @@ public class Player : MonoBehaviour
 
     public void RestartGame()
     {
-        SceneManager.LoadScene("Maze");
+        // Invoke restart event to tell other objects to reset
+        GameRestart?.Invoke();
+
+        // Reset variables
+        keys = 0;
+        health = 10;
+        coins = 0;
+        
+        // Reset UI objects and blur volume
+        playerUI.SetActive(true);
+        blurVolume.SetActive(false);
+        endText.gameObject.SetActive(false);
+
+        // Reset UI text
+        keysText.text = "Keys: " + keys.ToString();
+        coinsText.text = "Coins: " + coins.ToString();
+        healthText.text = "Health: " + health.ToString();
+
+        // Move player back to starting position
+        gameObject.transform.position = initialPosition;
+
+        // Re-enable player movement
+        GetComponent<TwoDController>().enabled = true;
+        GetComponent<Rigidbody2D>().simulated = true;
     }
 }

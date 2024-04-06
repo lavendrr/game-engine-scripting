@@ -2,6 +2,16 @@ using UnityEngine;
 
 public class Key : MonoBehaviour
 {
+    void OnEnable()
+    {
+        Player.GameRestart += ResetKey;
+    }
+
+    void OnDestroy()
+    {
+        Player.GameRestart -= ResetKey;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         // When a collision happens, make sure it's with the player
@@ -11,5 +21,10 @@ public class Key : MonoBehaviour
             other.gameObject.GetComponent<Player>().GiveKey();
             gameObject.SetActive(false);
         }
+    }
+
+    private void ResetKey()
+    {
+        gameObject.SetActive(true);
     }
 }

@@ -222,6 +222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4abf0b8a6ffb7466590f91603e18f389, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  closedSprite: {fileID: 203534116, guid: b6ccef812d4154fdd9d54b97353e8fe3, type: 3}
 --- !u!95 &7040865920471095590
 Animator:
   serializedVersion: 5

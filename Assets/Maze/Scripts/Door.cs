@@ -5,6 +5,16 @@ public class Door : MonoBehaviour
     private bool isOpen = false;
     private Animator animator;
 
+    void OnEnable()
+    {
+        Player.GameRestart += ResetDoor;
+    }
+
+    void OnDestroy()
+    {
+        Player.GameRestart -= ResetDoor;
+    }
+
     public void Start()
     {
         animator = GetComponent<Animator>();
@@ -22,6 +32,7 @@ public class Door : MonoBehaviour
                 // Disables the door's collider to let the player through, marks itself as open, and triggers the door's open animation
                 gameObject.GetComponent<BoxCollider2D>().enabled = false;
                 isOpen = true;
+                animator.ResetTrigger("ResetDoor"); // Reset the other trigger in case it is on
                 animator.SetTrigger("OpenDoor");
                 return true;
             }
@@ -35,4 +46,13 @@ public class Door : MonoBehaviour
             return false;
         }
     }
+
+    private void ResetDoor()
+    {
+        gameObject.GetComponent<BoxCollider2D>().enabled = true;
+        isOpen = false;
+        animator.ResetTrigger("OpenDoor"); // Reset the other trigger in case it is on
+        animator.SetTrigger("ResetDoor");
+    }
+
 }

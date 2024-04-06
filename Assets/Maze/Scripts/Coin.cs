@@ -2,6 +2,16 @@ using UnityEngine;
 
 public class Coin : MonoBehaviour
 {
+    void OnEnable()
+    {
+        Player.GameRestart += ResetCoin;
+    }
+
+    void OnDestroy()
+    {
+        Player.GameRestart -= ResetCoin;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         // When a collision happens, make sure it's with the player
@@ -11,5 +21,10 @@ public class Coin : MonoBehaviour
             other.gameObject.GetComponent<Player>().GiveCoin();
             gameObject.SetActive(false);
         }
+    }
+
+    private void ResetCoin()
+    {
+        gameObject.SetActive(true);
     }
 }
